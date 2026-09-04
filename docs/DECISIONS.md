@@ -34,3 +34,7 @@ Vanilla JS, CSS-variabler, Node utan npm-paket. Det tvingar oss att hålla appen
 ## 7. Rangordningen är deterministisk (2026-09-04)
 
 Ingen LLM i rangordningen. En student ska kunna fråga "varför ligger det här överst" och få ett svar i en mening. LLM används först när det finns beteendedata, och då för att föreslå, aldrig för att sortera tyst.
+
+## 8. Deploy till Vercel, bakom Vercels egen inloggning (2026-09-04)
+
+Repot deployas automatiskt till Vercel. `web/` serveras statiskt och `api/*.js` kör samma svar som den lokala servern via `server/api.js`. Inga beroenden tillkommer: Vercels Node-runtime kör ESM-filerna i `api/` som de är. Auth finns fortfarande inte i appen (§ARCHITECTURE), så produktions-URL:en ska stå bakom Vercels Deployment Protection tills egen inloggning finns. Den dag `CANVAS_TOKEN` eller `TIMEEDIT_ICAL_URL` läggs in som miljövariabel på Vercel är det Viktors data som ligger bakom den URL:en. Utan skydd får de inte läggas in.

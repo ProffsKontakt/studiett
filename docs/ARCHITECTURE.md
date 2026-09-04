@@ -35,7 +35,7 @@ Allt uppströms trycks in i fem typer: `Course`, `Event`, `Assignment`, `Result`
 
 ### 4. API (`server/server.js`)
 
-`GET /api/today`, `GET /api/exams`, `GET /api/degree`. JSON. Ingen auth i MVP (körs lokalt). Auth är första sak som byggs när fler än vi två kör den.
+`GET /api/today`, `GET /api/exams`, `GET /api/degree`. JSON. Svaren byggs i `server/api.js` som både den lokala servern och Vercels funktioner i `api/` anropar. Ingen auth i MVP: lokalt, eller på Vercel bakom Deployment Protection (`docs/DECISIONS.md` §8). Auth är första sak som byggs när fler än vi två kör den.
 
 ### 5. PWA (`web/`)
 
@@ -49,4 +49,4 @@ Tentaanmälan-larmet är en push-produkt. Web Push fungerar på iOS 16.4+ bara o
 
 - Ingen databas. JSON-filer per student tills auth finns.
 - Ingen LLM. Rangordningen är deterministisk och förklarbar. LLM-lagret kommer när det finns beteendedata att resonera över.
-- Ingen inloggning. Lokal körning.
+- Ingen inloggning. Lokal körning, eller Vercel bakom Vercels egen inloggning.
