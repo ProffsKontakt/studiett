@@ -23,10 +23,15 @@ function ladokSet(v) { try { if (v) localStorage.setItem(LADOK_KEY, JSON.stringi
 
 async function load(path) {
   const ladok = ladokGet();
-  const res = ladok
-    ? await fetch(path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ladok }) })
-    : await fetch(path);
-  if (!res.ok) throw new Error(`${path}: ${res.status}`);
+  let res;
+  try {
+    res = ladok
+      ? await fetch(path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ladok }) })
+      : await fetch(path);
+  } catch {
+    throw new Error("Ingen anslutning.");
+  }
+  if (!res.ok) throw new Error(`Servern svarade ${res.status}.`);
   return res.json();
 }
 
@@ -218,7 +223,7 @@ async function renderToday() {
       <div class="group">${items.map(renderRow).join("")}</div>`).join("")}
     ${data.items.length === 0 ? `<div class="empty"><strong>Resten av veckan är tom</strong>Nya händelser hämtas från schema, kursrum och Ladok automatiskt.</div>` : ""}
     ${sourceNotice(data.sources)}
-    <p class="footnote">Överst: det som kostar mest att missa. Därefter i tidsordning. Hämtat ${fmtTime(data.fetchedAt)}.</p>`;
+    <p class="footnote">Överst: det som kostar mest att missa. Därefter i tidsordning. ${refreshLine(data.fetchedAt)}</p>`;
 }
 
 /* ---------- Tentor ---------- */
@@ -308,24 +313,58 @@ async function renderDegree(message) {
   wireLadokPanel();
 }
 
+/* ---------- Laddning och uppdatering ---------- */
+
+const TITLES = { today: "Idag", exams: "Tentor", degree: "Examen" };
+let lastLoadedAt = 0;
+
+// Visas direkt vid flikbyte, innan svaret kommit (HIG Loading: visa något så fort som möjligt).
+function renderSkeleton(tab) {
+  view.setAttribute("aria-busy", "true");
+  view.innerHTML = `
+    <h1 class="large-title">${TITLES[tab]}</h1>
+    <p class="date-line">Hämtar…</p>
+    <div class="group skeleton" aria-hidden="true">
+      <div class="row"><div class="time"><strong>&nbsp;</strong></div><div class="main"><div class="title">&nbsp;</div><div class="sub">&nbsp;</div></div></div>
+      <div class="row"><div class="time"><strong>&nbsp;</strong></div><div class="main"><div class="title">&nbsp;</div><div class="sub">&nbsp;</div></div></div>
+      <div class="row"><div class="time"><strong>&nbsp;</strong></div><div class="main"><div class="title">&nbsp;</div><div class="sub">&nbsp;</div></div></div>
+    </div>`;
+}
+
+function refreshLine(fetchedAt) {
+  return `<span class="refresh-line">Hämtat ${fmtTime(fetchedAt)}. <button class="button-text is-inline" type="button" data-refresh>Uppdatera</button></span>`;
+}
+
+// Appen öppnas i tunnelbanan efter en natt i bakgrunden. Är datan äldre än fem minuter hämtas den om.
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && Date.now() - lastLoadedAt > 5 * 60 * 1000) go(currentTab, { silent: true });
+});
+view.addEventListener("click", e => { if (e.target.closest("[data-refresh]")) go(currentTab); });
+
 /* ---------- Navigation ---------- */
 
 const routes = { today: renderToday, exams: renderExams, degree: renderDegree };
+let currentTab = "today";
 
-async function go(tab) {
+async function go(tab, { silent = false } = {}) {
+  const switching = tab !== currentTab || !view.children.length;
+  currentTab = tab;
   tabs.forEach(t => {
     const on = t.dataset.tab === tab;
     t.classList.toggle("is-active", on);
     if (on) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current");
   });
   location.hash = tab;
+  // Vid flikbyte visas skelettet direkt. Vid tyst uppdatering står den gamla vyn kvar tills den nya kommit.
+  if (switching && !silent) renderSkeleton(tab);
   try {
     await routes[tab]();
+    lastLoadedAt = Date.now();
   } catch (e) {
-    view.innerHTML = `<div class="empty"><strong>Kunde inte hämta data</strong>${esc(e.message)}. Kontrollera att servern kör.</div>`;
+    view.innerHTML = `<h1 class="large-title">${TITLES[tab]}</h1><div class="empty"><strong>Kunde inte hämta data</strong>${esc(e.message)} <button class="button-text is-inline" type="button" data-refresh>Försök igen</button></div>`;
   }
-  window.scrollTo({ top: 0 });
-  view.focus({ preventScroll: true });
+  view.removeAttribute("aria-busy");
+  if (switching && !silent) { window.scrollTo({ top: 0 }); view.focus({ preventScroll: true }); }
 }
 
 tabs.forEach(t => t.addEventListener("click", () => go(t.dataset.tab)));

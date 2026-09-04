@@ -1,5 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#0A6C3F"/>
+  <!-- Fyrkantig, full-bleed: systemet lägger på hörnradien själv (HIG App icons, Icon shape). -->
+  <rect width="512" height="512" fill="#0A6C3F"/>
   <!-- tre linjer som blir en: stud · i · ett -->
   <g fill="none" stroke="#FFFFFF" stroke-width="30" stroke-linecap="round">
     <path d="M120 170 H300"/>

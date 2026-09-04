@@ -24,7 +24,7 @@ Tre funktioner, i den här ordningen, och bara de tre: **Idag** (dagligt), **Ten
 
 ```
 CLAUDE.md                      den här filen (AGENTS.md pekar hit)
-docs/                          ARCHITECTURE, DECISIONS, DESIGN, screenshots
+docs/                          ARCHITECTURE, DECISIONS, DESIGN, DATA (framtida databas), screenshots
 .claude/skills/apple-design/   HIG-baserad designgranskning, laddas automatiskt av Claude Code
 server/server.js               statisk server + /api/today /api/exams /api/degree
 server/adapters/               canvas.js timeedit.js ladok.js -> normaliserat schema

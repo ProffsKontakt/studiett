@@ -202,8 +202,17 @@ a.row { color: inherit; }
 .badge.is-danger { background: var(--danger); color: var(--on-danger); }
 .badge.is-warn { background: var(--warn); color: #000; }
 .badge.is-ok { background: var(--tint); color: var(--on-tint); }
+/* Skelett medan svaret hämtas: samma radmått som riktiga rader, inga rörelser. */
+.skeleton .row strong, .skeleton .row .title, .skeleton .row .sub { background: var(--surface-2); border-radius: 4px; color: transparent; }
+.skeleton .row strong { width: 44px; }
+.skeleton .row .title { width: 60%; }
+.skeleton .row .sub { width: 40%; }
+
 /* Knappar i text: tint betyder tryckbar. 44 pt tryckyta utan bakgrund. */
 .button-text { display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px; color: var(--tint); font-weight: 600; }
+/* Inline i löptext: ser ut som en länk, men tryckytan är 44 pt genom negativ vertikal marginal. */
+.button-text.is-inline { min-height: 44px; margin: -14px 0; padding: 0 2px; font-size: inherit; font-weight: 500; vertical-align: middle; }
+.refresh-line { display: inline-block; }
 .actions { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: center; margin-top: 10px; }
 .actions .action { margin-top: 0; }
 .status { margin: 6px 0 0; font-size: .9375rem; color: var(--label-2); }

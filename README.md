@@ -46,7 +46,7 @@ På Vercel: `vercel.json` serverar `web/` statiskt och `api/today.js`, `api/exam
 ```
 studiett/
 ├── AGENTS.md              instruktioner till Claude/agenter som jobbar i repot
-├── docs/                  arkitektur, beslut, designtokens
+├── docs/                  arkitektur, beslut, designtokens, datamodell (DATA.md)
 ├── .claude/skills/apple-design/   HIG-baserad designgranskning (körs på varje UI-ändring)
 ├── api/                   Vercel-funktioner: today.js exams.js degree.js -> server/api.js
 ├── vercel.json            web/ som statisk rot, mockdata inkluderad i funktionerna

@@ -1,6 +1,6 @@
 // Cachar appskalet. API-svar cachas som "senast känt" så appen visar något offline.
-const SHELL = "studiett-shell-v2";
-const DATA = "studiett-data-v2";
+const SHELL = "studiett-shell-v3";
+const DATA = "studiett-data-v3";
 const SHELL_FILES = ["/", "/index.html", "/styles.css", "/app.js", "/manifest.webmanifest", "/icons/icon.svg"];
 
 self.addEventListener("install", e => {
