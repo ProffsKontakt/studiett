@@ -48,3 +48,7 @@ Det är projektets första npm-beroende, `@anthropic-ai/sdk`, vilket bryter §5 
 Intygen lagras aldrig hos oss. PDF:en går genom minnet till modellen och kastas. Resultatet sparas i studentens webbläsare och skickas med varje anrop. "Ta bort Ladok-data" raderar allt.
 
 Ett resultatintyg visar bara godkända resultat. Rester syns först när ett registreringsintyg läggs ovanpå. Anmälningsperioder för tentor finns inte i något intyg; det förblir spår 1 eller handunderhållet i `LADOK_MOCK`.
+
+## 10. Indigo och solgult, Optimera-släkt (2026-09-05)
+
+Grundarna vill att Studiett känns som en syskonprodukt till Optimera Energi: indigo (#3648C3) och solgult (#FFDD6C) på benvitt (#F4F1EA), display-serifen Fraunces. Det ersätter det gröna i §6-eran. Vad som inte ändras: strukturen är fortfarande Apples (grupperade listor, bottenflikar, systemfont i brödtext, 44 pt tryckytor, mörkt läge), skillen granskar fortfarande varje UI-ändring, och gult är fortfarande bara tillåtet på det enda stora elementet. Alla kontraster är räknade och står i `docs/DESIGN.md`. Fraunces självhostas (SIL OFL) så att inga anrop går till Google.

@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <!-- Fyrkantig, full-bleed: systemet lägger på hörnradien själv (HIG App icons, Icon shape). -->
-  <rect width="512" height="512" fill="#0A6C3F"/>
-  <!-- tre linjer som blir en: stud · i · ett -->
-  <g fill="none" stroke="#FFFFFF" stroke-width="30" stroke-linecap="round">
+  <rect width="512" height="512" fill="#3648C3"/>
+  <!-- tre linjer som blir en: stud · i · ett. Solgult på indigo. -->
+  <g fill="none" stroke="#FFDD6C" stroke-width="30" stroke-linecap="round">
     <path d="M120 170 H300"/>
     <path d="M120 256 H340"/>
     <path d="M120 342 H300"/>
