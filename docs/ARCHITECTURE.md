@@ -23,6 +23,8 @@ En adapter per källsystem. Varje adapter exporterar `fetchAll(credentials) → 
 | Athena / Itslearning (SU) | REST API finns för Itslearning, kräver lärosätets godkännande | Ej påbörjad |
 | Daisy / iLearn (SU DSV) | Daisy: skrapning. iLearn: Moodle web services om aktiverat. | Ej påbörjad |
 
+Vilka system som finns att koppla, per lärosäte och gymnasium, med åtkomsttyp och vilka entiteter de kan mata: `docs/SOURCES.md`.
+
 ### 2. Normaliserat schema (`server/core/schema.md`)
 
 Allt uppströms trycks in i fem typer: `Course`, `Event`, `Assignment`, `Result`, `ExamRegistration`. Ingen kod utanför adaptrarna får känna till Canvas-, Ladok- eller TimeEdit-begrepp.
