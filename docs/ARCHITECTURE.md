@@ -6,7 +6,8 @@ Studiett lagrar så lite som möjligt men låtsas inte att det lagrar ingenting.
 
 - Källsystemen är master. Vi skriver aldrig tillbaka till dem i MVP.
 - Vi cachar normaliserad data per student i högst 24 h för att kunna skicka notiser och räkna trender. Cache kan raderas av studenten när som helst.
-- Tokens lagras krypterade på servern, aldrig i klienten. I MVP: `.env` på utvecklarens maskin.
+- Tokens lagras krypterade på servern, aldrig i klienten. I MVP: `.env` på utvecklarens maskin, läst av `server/env.js` utan beroenden.
+- Riktiga svar cachas i minne i `CACHE_TTL_MIN` minuter (standard 10) per student. Misslyckade anrop cachas inte. Varje API-svar bär `sources`, per källa `ok`, `mock:<profil>`, `saknas` eller feltexten, så att klienten kan säga vilken koppling som inte svarade.
 
 ## Lager
 
@@ -16,9 +17,9 @@ En adapter per källsystem. Varje adapter exporterar `fetchAll(credentials) → 
 
 | Källa | Åtkomst | Status |
 |---|---|---|
-| Canvas | REST API, personlig access token. Ingen CORS, måste gå via server. | Stub med riktiga endpoints |
-| TimeEdit | iCal-prenumerationslänk som studenten hämtar själv | iCal-parser klar, otestad mot riktig länk |
-| Ladok | Inget officiellt studentAPI. Alternativ: (a) studentens egen session mot ladok.se, (b) export/intyg-parsning, (c) avtal med Ladokkonsortiet. | Mock. Största risken i projektet. |
+| Canvas | REST API, personlig access token. Ingen CORS, måste gå via server. | Inkopplad bakom `CANVAS_TOKEN` i `.env`. Otestad mot riktig token. |
+| TimeEdit | iCal-prenumerationslänk som studenten hämtar själv | Inkopplad bakom `TIMEEDIT_ICAL_URL`. Parsern testad mot lokal .ics med TZID, sommar- och vintertid. Otestad mot riktig länk. |
+| Ladok | Inget officiellt studentAPI. Alternativ: (a) studentens egen session mot ladok.se, (b) export/intyg-parsning, (c) avtal med Ladokkonsortiet. | Mock. `LADOK_MOCK=viktor` lägger program, kurser och tentafönster från mockprofilen ovanpå de riktiga källorna. Största risken i projektet. |
 | Athena / Itslearning (SU) | REST API finns för Itslearning, kräver lärosätets godkännande | Ej påbörjad |
 | Daisy / iLearn (SU DSV) | Daisy: skrapning. iLearn: Moodle web services om aktiverat. | Ej påbörjad |
 

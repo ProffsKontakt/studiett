@@ -20,6 +20,16 @@ async function load(path) {
   return res.json();
 }
 
+/* ---------- Källor ---------- */
+
+const SOURCE_NAME = { canvas: "Canvas", timeedit: "TimeEdit", ladok: "Ladok" };
+function sourceNotice(sources) {
+  if (!sources) return "";
+  const failed = Object.entries(sources).filter(([, v]) => v !== "ok" && !String(v).startsWith("mock:") && v !== "saknas");
+  if (failed.length === 0) return "";
+  return `<p class="footnote">${failed.map(([k, v]) => `${SOURCE_NAME[k] ?? k} kunde inte hämtas (${esc(v)}). Kontrollera kopplingen i .env.`).join(" ")}</p>`;
+}
+
 /* ---------- Idag ---------- */
 
 function severity(item) {
@@ -98,6 +108,7 @@ async function renderToday() {
       <h3 class="group-title">${esc(label)}</h3>
       <div class="group">${items.map(renderRow).join("")}</div>`).join("")}
     ${data.items.length === 0 ? `<div class="empty"><strong>Resten av veckan är tom</strong>Nya händelser hämtas från schema, kursrum och Ladok automatiskt.</div>` : ""}
+    ${sourceNotice(data.sources)}
     <p class="footnote">Överst: det som kostar mest att missa. Därefter i tidsordning. Hämtat ${fmtTime(data.fetchedAt)}.</p>`;
 }
 
