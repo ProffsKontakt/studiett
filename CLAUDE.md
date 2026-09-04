@@ -24,7 +24,7 @@ Tre funktioner, i den här ordningen, och bara de tre: **Idag** (dagligt), **Ten
 
 ```
 CLAUDE.md                      den här filen (AGENTS.md pekar hit)
-docs/                          ARCHITECTURE, DECISIONS, DESIGN, DATA (framtida databas), screenshots
+docs/                          ARCHITECTURE, DECISIONS, DESIGN, DATA (framtida databas), SOURCES (systemkarta), screenshots
 .claude/skills/apple-design/   HIG-baserad designgranskning, laddas automatiskt av Claude Code
 server/server.js               statisk server + /api/today /api/exams /api/degree
 server/adapters/               canvas.js timeedit.js ladok.js -> normaliserat schema
@@ -39,3 +39,4 @@ web/                           PWA: index.html app.js styles.css sw.js manifest
 - **TimeEdit**: iCal-prenumerationslänk som studenten hämtar själv. Länken är hemligheten.
 - **Ladok**: inget officiellt student-API. Största risken i projektet. Tre spår i `docs/DECISIONS.md` §3. Spår 2 är byggt: intyg som PDF läses av en modell (`server/adapters/ladok.js`, `docs/DECISIONS.md` §9). Modellen skriver av, all status räknas deterministiskt.
 - Riktiga kopplingar läggs i `.env` enligt `.env.example`. Saknas de körs servern på mockdata.
+- Innan en ny adapter byggs: läs `docs/SOURCES.md` för åtkomsttyp och vad systemet kan mata. Gymnasiesystem är avtalsspår, inte studentspår.
