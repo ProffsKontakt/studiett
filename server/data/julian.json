@@ -1,0 +1,290 @@
+{
+ "anchor": "2026-09-04T08:00:00+02:00",
+ "student": {
+  "id": "julian",
+  "name": "Julian",
+  "institution": "Stockholms universitet, DSV"
+ },
+ "program": {
+  "name": "Kandidat Data- och systemvetenskap",
+  "totalHp": 180,
+  "startTerm": "HT23",
+  "nominalTerms": 6
+ },
+ "courses": [
+  {
+   "code": "IB513C",
+   "name": "Objektorienterad analys och design",
+   "hp": 7.5,
+   "term": "HT26",
+   "status": "registered",
+   "modules": [
+    {
+     "code": "TEN1",
+     "name": "Tentamen",
+     "hp": 4.5,
+     "passed": false
+    },
+    {
+     "code": "INL1",
+     "name": "Inlämningar",
+     "hp": 3,
+     "passed": false
+    }
+   ]
+  },
+  {
+   "code": "DA4004",
+   "name": "Databasmetodik",
+   "hp": 7.5,
+   "term": "HT26",
+   "status": "registered",
+   "modules": [
+    {
+     "code": "TEN1",
+     "name": "Tentamen",
+     "hp": 7.5,
+     "passed": false
+    }
+   ]
+  },
+  {
+   "code": "IB912C",
+   "name": "Programmering 1",
+   "hp": 7.5,
+   "term": "HT23",
+   "status": "completed",
+   "modules": [
+    {
+     "code": "TEN1",
+     "name": "Tentamen",
+     "hp": 7.5,
+     "passed": true,
+     "grade": "B"
+    }
+   ]
+  },
+  {
+   "code": "IB905C",
+   "name": "IT i organisationer",
+   "hp": 7.5,
+   "term": "HT23",
+   "status": "completed",
+   "modules": [
+    {
+     "code": "INL1",
+     "name": "Inlämning",
+     "hp": 7.5,
+     "passed": true,
+     "grade": "C"
+    }
+   ]
+  },
+  {
+   "code": "IB903C",
+   "name": "Informationssäkerhet",
+   "hp": 7.5,
+   "term": "VT24",
+   "status": "completed",
+   "modules": [
+    {
+     "code": "TEN1",
+     "name": "Tentamen",
+     "hp": 7.5,
+     "passed": true,
+     "grade": "A"
+    }
+   ]
+  },
+  {
+   "code": "IB906C",
+   "name": "Systemutveckling",
+   "hp": 7.5,
+   "term": "VT24",
+   "status": "completed",
+   "modules": [
+    {
+     "code": "PRO1",
+     "name": "Projekt",
+     "hp": 7.5,
+     "passed": true,
+     "grade": "B"
+    }
+   ]
+  },
+  {
+   "code": "DA2005",
+   "name": "Algoritmer och datastrukturer",
+   "hp": 7.5,
+   "term": "HT24",
+   "status": "rest",
+   "modules": [
+    {
+     "code": "TEN1",
+     "name": "Tentamen",
+     "hp": 5,
+     "passed": false,
+     "grade": "F"
+    },
+    {
+     "code": "LAB1",
+     "name": "Laborationer",
+     "hp": 2.5,
+     "passed": true
+    }
+   ]
+  },
+  {
+   "code": "IB914C",
+   "name": "Programmering 2",
+   "hp": 7.5,
+   "term": "HT24",
+   "status": "completed",
+   "modules": [
+    {
+     "code": "TEN1",
+     "name": "Tentamen",
+     "hp": 7.5,
+     "passed": true,
+     "grade": "C"
+    }
+   ]
+  },
+  {
+   "code": "IB908C",
+   "name": "Människa-datorinteraktion",
+   "hp": 7.5,
+   "term": "VT25",
+   "status": "completed",
+   "modules": [
+    {
+     "code": "INL1",
+     "name": "Inlämning",
+     "hp": 7.5,
+     "passed": true,
+     "grade": "B"
+    }
+   ]
+  },
+  {
+   "code": "IB911C",
+   "name": "Webbutveckling",
+   "hp": 7.5,
+   "term": "VT25",
+   "status": "completed",
+   "modules": [
+    {
+     "code": "PRO1",
+     "name": "Projekt",
+     "hp": 7.5,
+     "passed": true,
+     "grade": "A"
+    }
+   ]
+  },
+  {
+   "code": "IB520C",
+   "name": "Verksamhetsanalys",
+   "hp": 7.5,
+   "term": "HT25",
+   "status": "completed",
+   "modules": [
+    {
+     "code": "TEN1",
+     "name": "Tentamen",
+     "hp": 7.5,
+     "passed": true,
+     "grade": "C"
+    }
+   ]
+  },
+  {
+   "code": "IB521C",
+   "name": "Nätverk och kommunikation",
+   "hp": 7.5,
+   "term": "HT25",
+   "status": "completed",
+   "modules": [
+    {
+     "code": "TEN1",
+     "name": "Tentamen",
+     "hp": 7.5,
+     "passed": true,
+     "grade": "B"
+    }
+   ]
+  }
+ ],
+ "events": [
+  {
+   "id": "te:1",
+   "source": "timeedit",
+   "course": "IB513C",
+   "type": "lecture",
+   "title": "IB513C Föreläsning",
+   "start": "2026-09-04T09:00:00+02:00",
+   "end": "2026-09-04T11:45:00+02:00",
+   "location": "Nod, Kista"
+  },
+  {
+   "id": "te:2",
+   "source": "timeedit",
+   "course": "DA4004",
+   "type": "seminar",
+   "title": "DA4004 Seminarium (obligatoriskt)",
+   "start": "2026-09-07T13:00:00+02:00",
+   "end": "2026-09-07T15:00:00+02:00",
+   "location": "Nod",
+   "mandatory": true
+  },
+  {
+   "id": "te:3",
+   "source": "timeedit",
+   "course": "DA2005",
+   "type": "exam",
+   "title": "DA2005 Omtentamen",
+   "start": "2026-09-28T09:00:00+02:00",
+   "end": "2026-09-28T14:00:00+02:00"
+  }
+ ],
+ "assignments": [
+  {
+   "id": "il:1",
+   "source": "ilearn",
+   "course": "IB513C",
+   "title": "Inlämning 1: användningsfall",
+   "due": "2026-09-05T23:59:00+02:00",
+   "submitted": false,
+   "graded": true
+  },
+  {
+   "id": "il:2",
+   "source": "daisy",
+   "course": "DA4004",
+   "title": "Labb 1: ER-modell",
+   "due": "2026-09-10T23:59:00+02:00",
+   "submitted": false,
+   "graded": false
+  }
+ ],
+ "examRegistrations": [
+  {
+   "course": "DA2005",
+   "module": "TEN1",
+   "examDate": "2026-09-28T09:00:00+02:00",
+   "registrationOpens": "2026-08-21T00:00:00+02:00",
+   "registrationCloses": "2026-09-06T23:59:00+02:00",
+   "registered": false,
+   "url": "https://www.student.ladok.se"
+  },
+  {
+   "course": "DA4004",
+   "module": "TEN1",
+   "examDate": "2026-11-03T09:00:00+02:00",
+   "registrationOpens": "2026-09-24T00:00:00+02:00",
+   "registrationCloses": "2026-10-20T23:59:00+02:00",
+   "registered": false,
+   "url": "https://www.student.ladok.se"
+  }
+ ]
+}

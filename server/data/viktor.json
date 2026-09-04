@@ -1,0 +1,449 @@
+{
+ "anchor": "2026-09-04T08:00:00+02:00",
+ "student": {
+  "id": "viktor",
+  "name": "Viktor",
+  "institution": "KTH"
+ },
+ "program": {
+  "name": "Civilingenjör Maskinteknik",
+  "totalHp": 300,
+  "startTerm": "HT24",
+  "nominalTerms": 10
+ },
+ "courses": [
+  {
+   "code": "SF1624",
+   "name": "Algebra och geometri",
+   "hp": 7.5,
+   "term": "HT26",
+   "status": "registered",
+   "modules": [
+    {
+     "code": "TEN1",
+     "name": "Tentamen",
+     "hp": 7.5,
+     "passed": false
+    }
+   ]
+  },
+  {
+   "code": "SG1140",
+   "name": "Mekanik II",
+   "hp": 6,
+   "term": "HT26",
+   "status": "registered",
+   "modules": [
+    {
+     "code": "TEN1",
+     "name": "Tentamen",
+     "hp": 4.5,
+     "passed": false
+    },
+    {
+     "code": "LAB1",
+     "name": "Laborationer",
+     "hp": 1.5,
+     "passed": false
+    }
+   ]
+  },
+  {
+   "code": "MG1026",
+   "name": "Tillverkningsteknik",
+   "hp": 6,
+   "term": "HT26",
+   "status": "registered",
+   "modules": [
+    {
+     "code": "TEN1",
+     "name": "Tentamen",
+     "hp": 4.5,
+     "passed": false
+    },
+    {
+     "code": "PRO1",
+     "name": "Projekt",
+     "hp": 1.5,
+     "passed": false
+    }
+   ]
+  },
+  {
+   "code": "SF1626",
+   "name": "Flervariabelanalys",
+   "hp": 7.5,
+   "term": "VT26",
+   "status": "rest",
+   "modules": [
+    {
+     "code": "TEN1",
+     "name": "Tentamen",
+     "hp": 7.5,
+     "passed": false,
+     "grade": "F",
+     "date": "2026-06-02"
+    }
+   ]
+  },
+  {
+   "code": "SF1625",
+   "name": "Envariabelanalys",
+   "hp": 7.5,
+   "term": "HT24",
+   "status": "completed",
+   "modules": [
+    {
+     "code": "TEN1",
+     "name": "Tentamen",
+     "hp": 7.5,
+     "passed": true,
+     "grade": "C"
+    }
+   ]
+  },
+  {
+   "code": "SG1130",
+   "name": "Mekanik I",
+   "hp": 9,
+   "term": "HT24",
+   "status": "completed",
+   "modules": [
+    {
+     "code": "TEN1",
+     "name": "Tentamen",
+     "hp": 9,
+     "passed": true,
+     "grade": "B"
+    }
+   ]
+  },
+  {
+   "code": "MF1061",
+   "name": "Introduktion till maskinteknik",
+   "hp": 9,
+   "term": "HT24",
+   "status": "completed",
+   "modules": [
+    {
+     "code": "PRO1",
+     "name": "Projekt",
+     "hp": 9,
+     "passed": true,
+     "grade": "P"
+    }
+   ]
+  },
+  {
+   "code": "SF1522",
+   "name": "Numeriska beräkningar",
+   "hp": 6,
+   "term": "VT25",
+   "status": "completed",
+   "modules": [
+    {
+     "code": "TEN1",
+     "name": "Tentamen",
+     "hp": 6,
+     "passed": true,
+     "grade": "D"
+    }
+   ]
+  },
+  {
+   "code": "MJ1112",
+   "name": "Termodynamik",
+   "hp": 9,
+   "term": "VT25",
+   "status": "completed",
+   "modules": [
+    {
+     "code": "TEN1",
+     "name": "Tentamen",
+     "hp": 9,
+     "passed": true,
+     "grade": "C"
+    }
+   ]
+  },
+  {
+   "code": "SF1918",
+   "name": "Sannolikhetsteori och statistik",
+   "hp": 6,
+   "term": "VT25",
+   "status": "completed",
+   "modules": [
+    {
+     "code": "TEN1",
+     "name": "Tentamen",
+     "hp": 6,
+     "passed": true,
+     "grade": "B"
+    }
+   ]
+  },
+  {
+   "code": "SE1010",
+   "name": "Hållfasthetslära",
+   "hp": 9,
+   "term": "HT25",
+   "status": "completed",
+   "modules": [
+    {
+     "code": "TEN1",
+     "name": "Tentamen",
+     "hp": 9,
+     "passed": true,
+     "grade": "C"
+    }
+   ]
+  },
+  {
+   "code": "MF1062",
+   "name": "Maskinelement",
+   "hp": 9,
+   "term": "HT25",
+   "status": "completed",
+   "modules": [
+    {
+     "code": "TEN1",
+     "name": "Tentamen",
+     "hp": 9,
+     "passed": true,
+     "grade": "B"
+    }
+   ]
+  },
+  {
+   "code": "DD1318",
+   "name": "Programmeringsteknik",
+   "hp": 9,
+   "term": "HT25",
+   "status": "completed",
+   "modules": [
+    {
+     "code": "LAB1",
+     "name": "Laborationer",
+     "hp": 9,
+     "passed": true,
+     "grade": "A"
+    }
+   ]
+  },
+  {
+   "code": "MJ1401",
+   "name": "Värmeöverföring",
+   "hp": 6,
+   "term": "VT26",
+   "status": "completed",
+   "modules": [
+    {
+     "code": "TEN1",
+     "name": "Tentamen",
+     "hp": 6,
+     "passed": true,
+     "grade": "C"
+    }
+   ]
+  },
+  {
+   "code": "MF1063",
+   "name": "Produktframtagning",
+   "hp": 9,
+   "term": "VT26",
+   "status": "completed",
+   "modules": [
+    {
+     "code": "PRO1",
+     "name": "Projekt",
+     "hp": 9,
+     "passed": true,
+     "grade": "P"
+    }
+   ]
+  },
+  {
+   "code": "SF1610",
+   "name": "Diskret matematik",
+   "hp": 7.5,
+   "term": "VT26",
+   "status": "completed",
+   "modules": [
+    {
+     "code": "TEN1",
+     "name": "Tentamen",
+     "hp": 7.5,
+     "passed": true,
+     "grade": "B"
+    }
+   ]
+  },
+  {
+   "code": "SG1220",
+   "name": "Teknisk strömningsmekanik",
+   "hp": 6,
+   "term": "VT26",
+   "status": "completed",
+   "modules": [
+    {
+     "code": "TEN1",
+     "name": "Tentamen",
+     "hp": 6,
+     "passed": true,
+     "grade": "D"
+    }
+   ]
+  }
+ ],
+ "events": [
+  {
+   "id": "te:1",
+   "source": "timeedit",
+   "course": "SF1624",
+   "type": "lecture",
+   "title": "SF1624 Föreläsning 3",
+   "start": "2026-09-04T10:15:00+02:00",
+   "end": "2026-09-04T12:00:00+02:00",
+   "location": "F1"
+  },
+  {
+   "id": "te:2",
+   "source": "timeedit",
+   "course": "SG1140",
+   "type": "exercise",
+   "title": "SG1140 Övning",
+   "start": "2026-09-04T13:15:00+02:00",
+   "end": "2026-09-04T15:00:00+02:00",
+   "location": "M31"
+  },
+  {
+   "id": "te:3",
+   "source": "timeedit",
+   "course": "SG1140",
+   "type": "lab",
+   "title": "SG1140 Lab 1 (obligatorisk)",
+   "start": "2026-09-07T08:15:00+02:00",
+   "end": "2026-09-07T12:00:00+02:00",
+   "location": "Mekaniklab",
+   "mandatory": true
+  },
+  {
+   "id": "te:4",
+   "source": "timeedit",
+   "course": "MG1026",
+   "type": "lecture",
+   "title": "MG1026 Föreläsning",
+   "start": "2026-09-07T13:15:00+02:00",
+   "end": "2026-09-07T15:00:00+02:00",
+   "location": "M1"
+  },
+  {
+   "id": "te:5",
+   "source": "timeedit",
+   "course": "SF1624",
+   "type": "exercise",
+   "title": "SF1624 Övning",
+   "start": "2026-09-08T10:15:00+02:00",
+   "end": "2026-09-08T12:00:00+02:00",
+   "location": "E35"
+  },
+  {
+   "id": "te:6",
+   "source": "timeedit",
+   "course": "SF1626",
+   "type": "exam",
+   "title": "SF1626 Omtentamen",
+   "start": "2026-10-12T08:00:00+02:00",
+   "end": "2026-10-12T13:00:00+02:00",
+   "location": "Anmäld sal"
+  },
+  {
+   "id": "te:7",
+   "source": "timeedit",
+   "course": "SF1624",
+   "type": "exam",
+   "title": "SF1624 Tentamen",
+   "start": "2026-10-26T14:00:00+02:00",
+   "end": "2026-10-26T19:00:00+02:00"
+  }
+ ],
+ "assignments": [
+  {
+   "id": "cv:1",
+   "source": "canvas",
+   "course": "MG1026",
+   "title": "Inlämning: processval",
+   "due": "2026-09-04T17:00:00+02:00",
+   "submitted": false,
+   "graded": true,
+   "url": "https://canvas.kth.se"
+  },
+  {
+   "id": "cv:2",
+   "source": "canvas",
+   "course": "SF1624",
+   "title": "Veckouppgifter 2",
+   "due": "2026-09-06T23:59:00+02:00",
+   "submitted": false,
+   "graded": false,
+   "url": "https://canvas.kth.se"
+  },
+  {
+   "id": "cv:3",
+   "source": "canvas",
+   "course": "SG1140",
+   "title": "Labbrapport 1",
+   "due": "2026-09-14T23:59:00+02:00",
+   "submitted": false,
+   "graded": true,
+   "url": "https://canvas.kth.se"
+  },
+  {
+   "id": "cv:4",
+   "source": "canvas",
+   "course": "SF1624",
+   "title": "Veckouppgifter 1",
+   "due": "2026-08-30T23:59:00+02:00",
+   "submitted": true,
+   "graded": false
+  }
+ ],
+ "examRegistrations": [
+  {
+   "course": "SF1626",
+   "module": "TEN1",
+   "examDate": "2026-10-12T08:00:00+02:00",
+   "registrationOpens": "2026-08-25T00:00:00+02:00",
+   "registrationCloses": "2026-09-08T23:59:00+02:00",
+   "registered": false,
+   "url": "https://www.student.ladok.se"
+  },
+  {
+   "course": "SF1624",
+   "module": "TEN1",
+   "examDate": "2026-10-26T14:00:00+02:00",
+   "registrationOpens": "2026-09-16T00:00:00+02:00",
+   "registrationCloses": "2026-10-12T23:59:00+02:00",
+   "registered": false,
+   "url": "https://www.student.ladok.se"
+  },
+  {
+   "course": "SG1140",
+   "module": "TEN1",
+   "examDate": "2026-10-29T08:00:00+02:00",
+   "registrationOpens": "2026-09-19T00:00:00+02:00",
+   "registrationCloses": "2026-10-15T23:59:00+02:00",
+   "registered": false,
+   "url": "https://www.student.ladok.se"
+  },
+  {
+   "course": "MG1026",
+   "module": "TEN1",
+   "examDate": "2026-10-31T08:00:00+02:00",
+   "registrationOpens": "2026-09-21T00:00:00+02:00",
+   "registrationCloses": "2026-10-17T23:59:00+02:00",
+   "registered": true,
+   "url": "https://www.student.ladok.se"
+  }
+ ]
+}

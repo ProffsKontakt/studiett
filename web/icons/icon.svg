@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#0A6C3F"/>
+  <!-- tre linjer som blir en: stud · i · ett -->
+  <g fill="none" stroke="#FFFFFF" stroke-width="30" stroke-linecap="round">
+    <path d="M120 170 H300"/>
+    <path d="M120 256 H340"/>
+    <path d="M120 342 H300"/>
+    <path d="M392 150 V362"/>
+  </g>
+</svg>
