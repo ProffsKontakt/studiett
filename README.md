@@ -10,7 +10,7 @@ Ett aggregeringslager ovanpå lärosätenas befintliga system (Ladok, Canvas/Ath
 |---|---|---|---|
 | Dagligt | **Idag** — allt som gäller idag och i veckan, rangordnat efter vad som kostar mest att missa | TimeEdit + Canvas + Ladok | Dagliga öppningar |
 | Månadsvis | **Tentaanmälan** — "anmälan till SF1624 stänger torsdag, du är inte anmäld" | Ladok (kursregistreringar + anmälningsfönster) + tentaschema | Andel anmälda i tid |
-| Terminsvis | **Examen** — hinner jag ta examen i tid, vilka rester blockerar, när är nästa chans | Ladok (resultat + program) | Rester per student, genomströmning |
+| Terminsvis | **Examen** — hinner jag ta examen i tid, vilka rester blockerar, när är nästa chans | Ladok (resultat + program), i dag via uppladdade intyg | Rester per student, genomströmning |
 
 Pluggschema, träningspass och generativa AI-funktioner är lager fyra. De byggs inte förrän de tre ovan har riktig data i sig.
 
@@ -37,7 +37,7 @@ Riktiga kopplingar: `cp .env.example .env`, fyll i `CANVAS_TOKEN` och `TIMEEDIT_
 
 Öppna i Safari på iPhone → Dela → Lägg till på hemskärmen. Då körs den som app, exakt som Optimera Hub.
 
-Inga npm-beroenden i MVP:n. Node 18+ räcker.
+Ett npm-beroende, `@anthropic-ai/sdk`, för intygsläsningen (`docs/DECISIONS.md` §9). `npm install` först. Node 18+.
 
 På Vercel: `vercel.json` serverar `web/` statiskt och `api/today.js`, `api/exams.js`, `api/degree.js` svarar som den lokala servern. Miljövariabler sätts i Vercel-projektet, inte i `.env`. Håll Deployment Protection på tills appen har egen inloggning (`docs/DECISIONS.md` §8).
 
@@ -53,7 +53,7 @@ studiett/
 ├── server/
 │   ├── server.js          lokal server: statiska filer + API via server/api.js
 │   ├── api.js             API-kärnan, gemensam för lokalt och Vercel
-│   ├── adapters/          canvas.js timeedit.js ladok.js → normaliserat schema
+│   ├── adapters/          canvas.js timeedit.js ladok.js (intyg via modell) → normaliserat schema
 │   ├── core/              rank.js exams.js degree.js (produktlogiken)
 │   └── data/              mockprofiler (viktor-kth.json, julian-su.json)
 └── web/                   PWA: index.html app.js styles.css sw.js manifest
@@ -69,7 +69,7 @@ Om produkten fungerar på båda fungerar den på de flesta svenska lärosäten. 
 ## Nästa steg (i ordning)
 
 1. Viktor genererar en Canvas access token (Konto → Inställningar → Ny åtkomsttoken) och hämtar sin TimeEdit-iCal-länk. Lägg i `.env`. Kör `adapters/canvas.js` och `adapters/timeedit.js` mot riktig data.
-2. Kartlägg hur Ladok exponerar kursregistreringar, resultat och tentaanmälningsfönster för studenten (ladok.se → nätverksfliken i Safari). Det är projektets största risk. Se `docs/DECISIONS.md` §3.
+2. Ladda upp resultatintyg och registreringsintyg i Examen-vyn (kräver `ANTHROPIC_API_KEY`). Kartlägg sedan tentaanmälan i Ladok (ladok.se → nätverksfliken i Safari); anmälningsperioder finns inte i intygen. Se `docs/DECISIONS.md` §3 och §9.
 3. Kör appen dagligen i två veckor. Om ni själva slutar öppna den, är rangordningen fel, inte designen.
 4. 20 kursare i oktober. Mät dagliga öppningar och andel som anmäler sig till tenta i tid.
 

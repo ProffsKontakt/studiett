@@ -14,10 +14,119 @@ const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "
 const isToday = iso => new Date(iso).toDateString() === new Date().toDateString();
 const isTomorrow = iso => { const d = new Date(); d.setDate(d.getDate() + 1); return new Date(iso).toDateString() === d.toDateString(); };
 
+/* ---------- Ladok-data i webbläsaren ---------- */
+// Importerade intyg sparas bara här, i studentens egen webbläsare, och skickas med
+// varje anrop. Servern lagrar dem aldrig. Ta bort = borta.
+const LADOK_KEY = "studiett.ladok";
+function ladokGet() { try { return JSON.parse(localStorage.getItem(LADOK_KEY) || "null"); } catch { return null; } }
+function ladokSet(v) { try { if (v) localStorage.setItem(LADOK_KEY, JSON.stringify(v)); else localStorage.removeItem(LADOK_KEY); } catch {} }
+
 async function load(path) {
-  const res = await fetch(path);
+  const ladok = ladokGet();
+  const res = ladok
+    ? await fetch(path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ladok }) })
+    : await fetch(path);
   if (!res.ok) throw new Error(`${path}: ${res.status}`);
   return res.json();
+}
+
+// Slår ihop ett nytt intyg med tidigare importerade. Samma regler som server/adapters/ladok.js mergeLadok,
+// men körs här eftersom datan bor i webbläsaren. Status: completed > registered > rest.
+function mergeIntyg(existing, incoming) {
+  const rank = { completed: 3, registered: 2, rest: 1 };
+  const byCode = new Map();
+  for (const c of [...(existing?.courses ?? []), ...(incoming.courses ?? [])]) {
+    const prev = byCode.get(c.code);
+    if (!prev) { byCode.set(c.code, { ...c, modules: (c.modules ?? []).map(m => ({ ...m })) }); continue; }
+    const mods = new Map(prev.modules.map(m => [m.code, m]));
+    for (const m of c.modules ?? []) {
+      const pm = mods.get(m.code);
+      if (!pm) mods.set(m.code, { ...m });
+      else Object.assign(pm, { passed: pm.passed || m.passed, grade: m.grade ?? pm.grade, date: m.date ?? pm.date, hp: m.hp || pm.hp });
+    }
+    byCode.set(c.code, { code: c.code, name: c.name || prev.name, hp: c.hp || prev.hp, term: c.term || prev.term,
+      status: rank[c.status] >= rank[prev.status] ? c.status : prev.status, modules: [...mods.values()] });
+  }
+  const p = incoming.program, q = existing?.program;
+  const program = !p ? q : !q ? p : { name: p.name || q.name, totalHp: p.totalHp || q.totalHp, startTerm: p.startTerm || q.startTerm, nominalTerms: p.nominalTerms || q.nominalTerms };
+  return { program, courses: [...byCode.values()], examRegistrations: existing?.examRegistrations ?? [], intyg: [...(existing?.intyg ?? []), ...(incoming.intyg ?? [])] };
+}
+
+const KIND_NAME = { resultatintyg: "Resultatintyg", nationellt_resultatintyg: "Nationellt resultatintyg", registreringsintyg: "Registreringsintyg", forvantat_deltagande: "Intyg över förväntat deltagande", annat: "Intyg" };
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(String(fr.result).split(",")[1] ?? "");
+    fr.onerror = () => reject(new Error("Filen kunde inte läsas."));
+    fr.readAsDataURL(file);
+  });
+}
+
+async function importIntygFile(file, statusEl, button) {
+  if (file.type && file.type !== "application/pdf") { statusEl.textContent = "Välj en PDF från Ladok."; statusEl.className = "status is-danger"; return; }
+  button.disabled = true;
+  statusEl.className = "status";
+  statusEl.setAttribute("aria-busy", "true");
+  statusEl.textContent = "Läser intyget. Det tar upp till en minut.";
+  try {
+    const pdf = await fileToBase64(file);
+    const res = await fetch("/api/ladok-import", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ pdf }) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `Servern svarade ${res.status}.`);
+    ladokSet(mergeIntyg(ladokGet(), data));
+    const hp = data.courses.flatMap(c => c.modules).filter(m => m.passed).reduce((s, m) => s + (m.hp || 0), 0);
+    statusEl.textContent = `${KIND_NAME[data.kind] ?? "Intyg"} importerat: ${data.courses.length} kurser${hp ? `, ${hp} hp godkända` : ""}.${data.warnings.length ? " " + data.warnings.join(" ") : ""}`;
+    await renderDegree(statusEl.textContent);
+  } catch (e) {
+    statusEl.className = "status is-danger";
+    statusEl.textContent = `Intyget kunde inte läsas. ${e.message}`;
+    button.disabled = false;
+  } finally {
+    statusEl.removeAttribute("aria-busy");
+  }
+}
+
+function renderLadokPanel(message) {
+  const ladok = ladokGet();
+  const intyg = ladok?.intyg ?? [];
+  const last = intyg[intyg.length - 1];
+  const hasResult = intyg.some(i => i.kind === "resultatintyg" || i.kind === "nationellt_resultatintyg");
+  const hasReg = intyg.some(i => i.kind === "registreringsintyg");
+  let hint;
+  if (!intyg.length) hint = "Ladda upp resultat- och registreringsintyg från Ladok. De sparas bara i din webbläsare.";
+  else if (!hasReg) hint = "Lägg till ditt registreringsintyg också, så syns vilka kurser du läser nu och vilka som är rester.";
+  else if (!hasResult) hint = "Lägg till ditt resultatintyg också, så räknas tagna hp.";
+  else hint = "";
+  return `
+    <h3 class="group-title">Ladok</h3>
+    <div class="group">
+      <div class="row row-stacked">
+        <div class="time"><strong>${intyg.length}</strong>intyg</div>
+        <div class="main">
+          <div class="title">${intyg.length ? esc(KIND_NAME[last.kind] ?? "Intyg") + " importerat " + (last.importedAt ? cap(fmtDay(last.importedAt)) : "") : "Inget intyg importerat"}</div>
+          ${hint ? `<div class="sub">${esc(hint)}</div>` : ""}
+          <p class="status ${message?.startsWith("Intyget kunde inte") ? "is-danger" : ""}" id="ladok-status" role="status">${esc(message ?? "")}</p>
+          <div class="actions">
+            <button class="action" id="ladok-pick" type="button">${intyg.length ? "Lägg till intyg" : "Ladda upp intyg"}</button>
+            ${intyg.length ? `<button class="button-text" id="ladok-clear" type="button">Ta bort Ladok-data</button>` : ""}
+          </div>
+          <input type="file" id="ladok-file" class="visually-hidden" accept="application/pdf" aria-label="Välj intyg från Ladok (PDF)">
+        </div>
+      </div>
+    </div>
+    <p class="footnote">Intygen finns i Ladok för studenter under Intyg. Tentaanmälan syns inte i intyg.</p>`;
+}
+
+function wireLadokPanel() {
+  const pick = document.getElementById("ladok-pick");
+  const file = document.getElementById("ladok-file");
+  const clear = document.getElementById("ladok-clear");
+  const status = document.getElementById("ladok-status");
+  if (!pick || !file) return;
+  pick.addEventListener("click", () => file.click());
+  file.addEventListener("change", () => { if (file.files[0]) importIntygFile(file.files[0], status, pick); });
+  if (clear) clear.addEventListener("click", async () => { ladokSet(null); await renderDegree("Ladok-data borttagna."); });
 }
 
 /* ---------- Källor ---------- */
@@ -25,7 +134,7 @@ async function load(path) {
 const SOURCE_NAME = { canvas: "Canvas", timeedit: "TimeEdit", ladok: "Ladok" };
 function sourceNotice(sources) {
   if (!sources) return "";
-  const failed = Object.entries(sources).filter(([, v]) => v !== "ok" && !String(v).startsWith("mock:") && v !== "saknas");
+  const failed = Object.entries(sources).filter(([, v]) => v !== "ok" && !String(v).startsWith("mock:") && !String(v).startsWith("intyg:") && v !== "saknas");
   if (failed.length === 0) return "";
   return `<p class="footnote">${failed.map(([k, v]) => `${SOURCE_NAME[k] ?? k} kunde inte hämtas (${esc(v)}). Kontrollera kopplingen i .env.`).join(" ")}</p>`;
 }
@@ -161,10 +270,11 @@ async function renderExams() {
 
 /* ---------- Examen ---------- */
 
-async function renderDegree() {
+async function renderDegree(message) {
   const d = await load("/api/degree");
   if (!d.program) {
-    view.innerHTML = `<h1 class="large-title">Examen</h1><div class="empty"><strong>Inget program kopplat</strong>Koppla Ladok så räknar vi ut var du ligger.</div>`;
+    view.innerHTML = `<h1 class="large-title">Examen</h1><div class="empty"><strong>Inget program kopplat</strong>Ladda upp dina intyg från Ladok så räknar vi ut var du ligger.</div>${renderLadokPanel(message)}`;
+    wireLadokPanel();
     return;
   }
   view.innerHTML = `
@@ -193,7 +303,9 @@ async function renderDegree() {
             ${r.nextChance ? `<span class="badge ${r.nextChance.registered ? "is-ok" : "is-warn"}">${r.nextChance.registered ? "Anmäld" : "Ej anmäld"}</span>` : ""}
           </div>
         </div>`).join("")}</div>` : ""}
-    <p class="footnote">Räknat på godkända moduler i Ladok. Nominell takt ${d.nominalPace} hp per termin.</p>`;
+    <p class="footnote">Räknat på godkända moduler i Ladok. Nominell takt ${d.nominalPace} hp per termin.</p>
+    ${renderLadokPanel(message)}`;
+  wireLadokPanel();
 }
 
 /* ---------- Navigation ---------- */

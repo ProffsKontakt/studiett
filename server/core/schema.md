@@ -6,6 +6,7 @@ Allt adaptrarna returnerar. Inga källspecifika fält utanför `raw`.
 type Source = "ladok" | "canvas" | "timeedit" | "athena" | "daisy" | "ilearn" | "manual";
 
 interface Course {
+  source?: Source;       // saknas = Ladok-härledd (intyg, mock)
   code: string;          // "SF1624"
   name: string;          // "Algebra och geometri"
   hp: number;            // 7.5

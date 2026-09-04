@@ -38,3 +38,13 @@ Ingen LLM i rangordningen. En student ska kunna fråga "varför ligger det här 
 ## 8. Deploy till Vercel, bakom Vercels egen inloggning (2026-09-04)
 
 Repot deployas automatiskt till Vercel. `web/` serveras statiskt och `api/*.js` kör samma svar som den lokala servern via `server/api.js`. Inga beroenden tillkommer: Vercels Node-runtime kör ESM-filerna i `api/` som de är. Auth finns fortfarande inte i appen (§ARCHITECTURE), så produktions-URL:en ska stå bakom Vercels Deployment Protection tills egen inloggning finns. Den dag `CANVAS_TOKEN` eller `TIMEEDIT_ICAL_URL` läggs in som miljövariabel på Vercel är det Viktors data som ligger bakom den URL:en. Utan skydd får de inte läggas in.
+
+## 9. Ladok via intyg, läst av en modell (2026-09-04)
+
+Spår 2 i §3 byggs först. Studenten hämtar resultatintyg och registreringsintyg i Ladok för studenter och laddar upp PDF:erna i Examen-vyn. En modell (`claude-opus-5`, Anthropic) skriver av intyget till JSON enligt ett strikt schema; status (klar, registrerad, rest), hp och examensprognos räknas sedan deterministiskt i `server/adapters/ladok.js` och `server/core/`. Modellen skriver av, den sorterar och bedömer inte, så §7 håller.
+
+Det är projektets första npm-beroende, `@anthropic-ai/sdk`, vilket bryter §5 medvetet: att skriva HTTP-anropet själv vore mer kod och mer risk än paketet. Inga fler beroenden utan nytt beslut.
+
+Intygen lagras aldrig hos oss. PDF:en går genom minnet till modellen och kastas. Resultatet sparas i studentens webbläsare och skickas med varje anrop. "Ta bort Ladok-data" raderar allt.
+
+Ett resultatintyg visar bara godkända resultat. Rester syns först när ett registreringsintyg läggs ovanpå. Anmälningsperioder för tentor finns inte i något intyg; det förblir spår 1 eller handunderhållet i `LADOK_MOCK`.

@@ -75,6 +75,8 @@ Grupperade, insatta listor (inset grouped) med 10 pt radie, 16 pt marginal. Bott
 
 Vänsterjusterat genomgående. Ingen centrering utom i tomma tillstånd.
 
+Knappar: `.action` är den fyllda tint-knappen, en per vy. `.button-text` är tint-text med 44 pt tryckyta för sekundära handlingar som "Ta bort Ladok-data". Statusrader (`.status`) står i sekundärtext direkt under det de beskriver, i `--danger` när något gick fel. Filval går via systemets filväljare, aldrig en egen.
+
 ### Rörelse
 
 En enda rörelse: när Idag-listan laddas glider den översta raden in. Allt annat är statiskt. `prefers-reduced-motion` stänger av den.

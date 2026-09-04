@@ -14,7 +14,7 @@ Tre funktioner, i den här ordningen, och bara de tre: **Idag** (dagligt), **Ten
 - Läs `docs/DESIGN.md` för tokens innan du skriver CSS. Hitta inte på nya färger.
 - Produktlogiken bor i `server/core/`. Ändra rangordning där, aldrig i `web/app.js`.
 - Alla datakällor går via `server/adapters/` och returnerar objekt enligt `server/core/schema.md`. Ingen adapter läcker källspecifika fält uppåt.
-- Inga npm-beroenden utan beslut i `docs/DECISIONS.md`.
+- Inga npm-beroenden utan beslut i `docs/DECISIONS.md`. Det enda hittills är `@anthropic-ai/sdk` (§9).
 - Svenska i UI och dokumentation. Engelska i kod och commit-meddelanden.
 - Personuppgifter: lagra aldrig tokens eller studentdata i repot. `.env` är gitignored. Läs aldrig `.env`; du behöver inte se värdena för att skriva koden.
 - Skriv aldrig till källsystemen. Tentaanmälan görs i Ladok; appen länkar dit.
@@ -37,5 +37,5 @@ web/                           PWA: index.html app.js styles.css sw.js manifest
 
 - **Canvas**: personlig åtkomsttoken, skapas av studenten själv. Måste anropas från servern (ingen CORS).
 - **TimeEdit**: iCal-prenumerationslänk som studenten hämtar själv. Länken är hemligheten.
-- **Ladok**: inget officiellt student-API. Största risken i projektet. Tre spår i `docs/DECISIONS.md` §3.
+- **Ladok**: inget officiellt student-API. Största risken i projektet. Tre spår i `docs/DECISIONS.md` §3. Spår 2 är byggt: intyg som PDF läses av en modell (`server/adapters/ladok.js`, `docs/DECISIONS.md` §9). Modellen skriver av, all status räknas deterministiskt.
 - Riktiga kopplingar läggs i `.env` enligt `.env.example`. Saknas de körs servern på mockdata.

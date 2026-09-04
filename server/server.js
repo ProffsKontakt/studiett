@@ -20,7 +20,7 @@ const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".
 createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   try {
-    if (url.pathname.startsWith("/api/")) return respond(url.pathname, res);
+    if (url.pathname.startsWith("/api/")) return respond(url.pathname, req, res);
     let file = normalize(url.pathname === "/" ? "/index.html" : url.pathname).replace(/^(\.\.[/\\])+/, "");
     let full = join(WEB, file);
     const s = await stat(full).catch(() => null);
