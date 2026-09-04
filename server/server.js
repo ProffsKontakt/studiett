@@ -3,7 +3,10 @@ import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
+import { loadEnv } from "./env.js";
 import { loadBundle } from "./adapters/index.js";
+
+loadEnv();
 import { rank } from "./core/rank.js";
 import { examStatus } from "./core/exams.js";
 import { degree } from "./core/degree.js";
@@ -19,9 +22,9 @@ async function api(path) {
   const bundle = await loadBundle();
   const now = new Date();
   switch (path) {
-    case "/api/today":  return { student: bundle.student, fetchedAt: bundle.fetchedAt, ...rank(bundle, now) };
-    case "/api/exams":  return { student: bundle.student, ...examStatus(bundle, now) };
-    case "/api/degree": return { student: bundle.student, ...degree(bundle, now) };
+    case "/api/today":  return { student: bundle.student, fetchedAt: bundle.fetchedAt, sources: bundle.sources, ...rank(bundle, now) };
+    case "/api/exams":  return { student: bundle.student, sources: bundle.sources, ...examStatus(bundle, now) };
+    case "/api/degree": return { student: bundle.student, sources: bundle.sources, ...degree(bundle, now) };
     default: return null;
   }
 }
@@ -45,4 +48,4 @@ createServer(async (req, res) => {
     res.writeHead(500, { "content-type": "text/plain" });
     res.end(String(e));
   }
-}).listen(PORT, () => console.log(`Studiett  http://localhost:${PORT}  (profil: ${process.env.STUDENT ?? "viktor"})`));
+}).listen(PORT, () => console.log(`Studiett  http://localhost:${PORT}  (${process.env.CANVAS_TOKEN || process.env.TIMEEDIT_ICAL_URL ? "riktiga kopplingar från .env" : "mockprofil " + (process.env.STUDENT ?? "viktor")})`));

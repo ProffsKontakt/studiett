@@ -16,7 +16,18 @@ function icalDate(v) {
   if (!m) return null;
   const [, y, mo, d, h = "00", mi = "00", s = "00", z] = m;
   const iso = `${y}-${mo}-${d}T${h}:${mi}:${s}`;
-  return z ? `${iso}Z` : new Date(`${iso}+02:00`).toISOString(); // Europe/Stockholm; byt till riktig TZ-hantering senare
+  return z ? `${iso}Z` : fromStockholm(iso);
+}
+
+// Tolkar en lokal tid i Europe/Stockholm (TimeEdit anger TZID) utan beroenden.
+// Gissar UTC, mäter avvikelsen med Intl och korrigerar. Klarar sommar- och vintertid.
+const stockholm = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Stockholm", hourCycle: "h23",
+  year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" });
+function fromStockholm(localIso) {
+  const guess = new Date(`${localIso}Z`);
+  const parts = Object.fromEntries(stockholm.formatToParts(guess).map(p => [p.type, p.value]));
+  const seen = Date.UTC(+parts.year, +parts.month - 1, +parts.day, +parts.hour, +parts.minute, +parts.second);
+  return new Date(guess.getTime() - (seen - guess.getTime())).toISOString();
 }
 
 function unfold(text) {
