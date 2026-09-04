@@ -19,7 +19,7 @@ En adapter per källsystem. Varje adapter exporterar `fetchAll(credentials) → 
 |---|---|---|
 | Canvas | REST API, personlig access token. Ingen CORS, måste gå via server. | Inkopplad bakom `CANVAS_TOKEN` i `.env`. Otestad mot riktig token. |
 | TimeEdit | iCal-prenumerationslänk som studenten hämtar själv | Inkopplad bakom `TIMEEDIT_ICAL_URL`. Parsern testad mot lokal .ics med TZID, sommar- och vintertid. Otestad mot riktig länk. |
-| Ladok | Inget officiellt studentAPI. Alternativ: (a) studentens egen session mot ladok.se, (b) export/intyg-parsning, (c) avtal med Ladokkonsortiet. | Mock. `LADOK_MOCK=viktor` lägger program, kurser och tentafönster från mockprofilen ovanpå de riktiga källorna. Största risken i projektet. |
+| Ladok | Inget officiellt studentAPI. (a) studentens egen session mot ladok.se, (b) intyg som PDF, (c) avtal med Ladokkonsortiet. | (b) byggd: `POST /api/ladok-import` läser resultat- och registreringsintyg med en modell (`docs/DECISIONS.md` §9). Resultatet bor i studentens webbläsare och skickas med som `ladok` i anropen. `LADOK_MOCK=viktor` ger tentafönster tills (a) finns. |
 | Athena / Itslearning (SU) | REST API finns för Itslearning, kräver lärosätets godkännande | Ej påbörjad |
 | Daisy / iLearn (SU DSV) | Daisy: skrapning. iLearn: Moodle web services om aktiverat. | Ej påbörjad |
 
@@ -35,7 +35,7 @@ Allt uppströms trycks in i fem typer: `Course`, `Event`, `Assignment`, `Result`
 
 ### 4. API (`server/server.js`)
 
-`GET /api/today`, `GET /api/exams`, `GET /api/degree`. JSON. Svaren byggs i `server/api.js` som både den lokala servern och Vercels funktioner i `api/` anropar. Ingen auth i MVP: lokalt, eller på Vercel bakom Deployment Protection (`docs/DECISIONS.md` §8). Auth är första sak som byggs när fler än vi två kör den.
+`GET /api/today`, `GET /api/exams`, `GET /api/degree`. JSON. Samma vägar tar `POST { ladok }` med importerade Ladok-data som då ersätter mockens program och kurser. `POST /api/ladok-import { pdf }` läser ett intyg och svarar med Ladok-data utan att spara något. Svaren byggs i `server/api.js` som både den lokala servern och Vercels funktioner i `api/` anropar. Ingen auth i MVP: lokalt, eller på Vercel bakom Deployment Protection (`docs/DECISIONS.md` §8). Auth är första sak som byggs när fler än vi två kör den.
 
 ### 5. PWA (`web/`)
 
@@ -48,5 +48,5 @@ Tentaanmälan-larmet är en push-produkt. Web Push fungerar på iOS 16.4+ bara o
 ## Vad som medvetet inte finns
 
 - Ingen databas. JSON-filer per student tills auth finns.
-- Ingen LLM. Rangordningen är deterministisk och förklarbar. LLM-lagret kommer när det finns beteendedata att resonera över.
+- Ingen LLM i produktlogiken. Rangordningen är deterministisk och förklarbar. Den enda modellanvändningen är avskrift av Ladok-intyg (`docs/DECISIONS.md` §9).
 - Ingen inloggning. Lokal körning, eller Vercel bakom Vercels egen inloggning.

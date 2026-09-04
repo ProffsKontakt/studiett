@@ -202,6 +202,15 @@ a.row { color: inherit; }
 .badge.is-danger { background: var(--danger); color: var(--on-danger); }
 .badge.is-warn { background: var(--warn); color: #000; }
 .badge.is-ok { background: var(--tint); color: var(--on-tint); }
+/* Knappar i text: tint betyder tryckbar. 44 pt tryckyta utan bakgrund. */
+.button-text { display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px; color: var(--tint); font-weight: 600; }
+.actions { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: center; margin-top: 10px; }
+.actions .action { margin-top: 0; }
+.status { margin: 6px 0 0; font-size: .9375rem; color: var(--label-2); }
+.status:empty { display: none; }
+.status.is-danger { color: var(--danger); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
 /* Rad med långt namn: statusen ligger under texten istället för i en tredje kolumn. */
 .row-stacked { grid-template-columns: 62px 1fr; }
 .row-stacked .badge { display: inline-block; margin-top: 6px; }

@@ -7,7 +7,7 @@ import * as timeedit from "./timeedit.js";
 const here = dirname(fileURLToPath(import.meta.url));
 const MINUTE = 60 * 1000;
 
-// Slår ihop flera adaptrars delresultat till en NormalizedBundle.
+// Slår ihop flera adaptrars delresultat till en NormalizedBundle. Första förekomsten vinner.
 export function merge(base, ...parts) {
   const out = { ...base, courses: [...(base.courses ?? [])], events: [...(base.events ?? [])],
     assignments: [...(base.assignments ?? [])], examRegistrations: [...(base.examRegistrations ?? [])] };
@@ -33,14 +33,19 @@ function liveConfig(env = process.env) {
 
 const cache = new Map(); // key -> { at, bundle }
 
-export async function loadBundle(student = process.env.STUDENT ?? "viktor", env = process.env) {
+// overlay = Ladok-data som studenten importerat från intyg (skickas med från klienten,
+// lagras aldrig på servern). Den ersätter program och kurser från mock/LADOK_MOCK.
+export async function loadBundle(student = process.env.STUDENT ?? "viktor", env = process.env, overlay = null) {
   const sources = liveConfig(env);
-  if (sources.length === 0) return loadMock(student);
+  const bundle = sources.length === 0 ? await loadMock(student) : await loadLive(student, env, sources);
+  return overlay ? applyOverlay(bundle, overlay) : bundle;
+}
 
+async function loadLive(student, env, sources) {
   const ttl = Number(env.CACHE_TTL_MIN ?? 10) * MINUTE;
   const key = `live:${student}`;
   const hit = cache.get(key);
-  if (hit && Date.now() - hit.at < ttl) return { ...hit.bundle, fetchedAt: hit.bundle.fetchedAt, cached: true };
+  if (hit && Date.now() - hit.at < ttl) return { ...hit.bundle, cached: true };
 
   const results = await Promise.allSettled(sources.map(s => s.fetch()));
   const status = {};
@@ -75,6 +80,17 @@ export async function loadBundle(student = process.env.STUDENT ?? "viktor", env 
   // Cacha bara hela svar. Ett misslyckat anrop ska försökas igen vid nästa sidladdning.
   if (results.every(r => r.status === "fulfilled")) cache.set(key, { at: Date.now(), bundle });
   return bundle;
+}
+
+function applyOverlay(bundle, overlay) {
+  const courses = Array.isArray(overlay.courses) ? overlay.courses : [];
+  const exams = Array.isArray(overlay.examRegistrations) && overlay.examRegistrations.length ? overlay.examRegistrations : bundle.examRegistrations;
+  // Intyget ersätter all Ladok-härledd kursdata (mock och LADOK_MOCK). Kurser från riktiga
+  // adaptrar (Canvas, märkta med source) behålls så att deadlines fortfarande hör till en kurs.
+  const live = bundle.courses.filter(c => c.source && c.source !== "ladok");
+  const merged = merge({ ...bundle, program: overlay.program ?? bundle.program, courses: [], examRegistrations: exams }, { courses }, { courses: live });
+  const n = Array.isArray(overlay.intyg) ? overlay.intyg.length : 0;
+  return { ...merged, sources: { ...bundle.sources, ladok: `intyg:${n}` } };
 }
 
 async function loadMock(student) {

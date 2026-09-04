@@ -50,6 +50,7 @@ export async function fetchAll({ baseUrl, token }) {
 
   return {
     courses: courses.map(c => ({
+      source: "canvas",
       code: (c.course_code ?? "").split(/\s/)[0],
       name: c.name,
       hp: 0,              // Canvas vet inte hp. Ladok fyller i.
