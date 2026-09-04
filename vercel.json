@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "outputDirectory": "web",
+  "functions": {
+    "api/*.js": { "includeFiles": "server/data/**" }
+  },
+  "headers": [
+    { "source": "/sw.js", "headers": [{ "key": "cache-control", "value": "no-cache" }] },
+    { "source": "/api/(.*)", "headers": [{ "key": "cache-control", "value": "no-store" }] }
+  ]
+}

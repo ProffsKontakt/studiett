@@ -1,15 +1,14 @@
 // Studiett server. Inga beroenden. Node 18+.
+// Lokalt: statiska filer ur web/ plus API:t. På Vercel serveras web/ statiskt och
+// api/*.js kör samma svar via server/api.js.
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadEnv } from "./env.js";
-import { loadBundle } from "./adapters/index.js";
+import { respond } from "./api.js";
 
 loadEnv();
-import { rank } from "./core/rank.js";
-import { examStatus } from "./core/exams.js";
-import { degree } from "./core/degree.js";
 
 const here = fileURLToPath(new URL(".", import.meta.url));
 const WEB = join(here, "..", "web");
@@ -18,26 +17,10 @@ const PORT = Number(process.env.PORT ?? 3000);
 const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".css": "text/css",
   ".json": "application/json", ".webmanifest": "application/manifest+json", ".svg": "image/svg+xml", ".png": "image/png" };
 
-async function api(path) {
-  const bundle = await loadBundle();
-  const now = new Date();
-  switch (path) {
-    case "/api/today":  return { student: bundle.student, fetchedAt: bundle.fetchedAt, sources: bundle.sources, ...rank(bundle, now) };
-    case "/api/exams":  return { student: bundle.student, sources: bundle.sources, ...examStatus(bundle, now) };
-    case "/api/degree": return { student: bundle.student, sources: bundle.sources, ...degree(bundle, now) };
-    default: return null;
-  }
-}
-
 createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   try {
-    if (url.pathname.startsWith("/api/")) {
-      const data = await api(url.pathname);
-      if (!data) { res.writeHead(404); return res.end(); }
-      res.writeHead(200, { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" });
-      return res.end(JSON.stringify(data));
-    }
+    if (url.pathname.startsWith("/api/")) return respond(url.pathname, res);
     let file = normalize(url.pathname === "/" ? "/index.html" : url.pathname).replace(/^(\.\.[/\\])+/, "");
     let full = join(WEB, file);
     const s = await stat(full).catch(() => null);

@@ -39,6 +39,8 @@ Riktiga kopplingar: `cp .env.example .env`, fyll i `CANVAS_TOKEN` och `TIMEEDIT_
 
 Inga npm-beroenden i MVP:n. Node 18+ räcker.
 
+På Vercel: `vercel.json` serverar `web/` statiskt och `api/today.js`, `api/exams.js`, `api/degree.js` svarar som den lokala servern. Miljövariabler sätts i Vercel-projektet, inte i `.env`. Håll Deployment Protection på tills appen har egen inloggning (`docs/DECISIONS.md` §8).
+
 ## Struktur
 
 ```
@@ -46,8 +48,11 @@ studiett/
 ├── AGENTS.md              instruktioner till Claude/agenter som jobbar i repot
 ├── docs/                  arkitektur, beslut, designtokens
 ├── .claude/skills/apple-design/   HIG-baserad designgranskning (körs på varje UI-ändring)
+├── api/                   Vercel-funktioner: today.js exams.js degree.js -> server/api.js
+├── vercel.json            web/ som statisk rot, mockdata inkluderad i funktionerna
 ├── server/
-│   ├── server.js          statisk server + /api/today /api/exams /api/degree
+│   ├── server.js          lokal server: statiska filer + API via server/api.js
+│   ├── api.js             API-kärnan, gemensam för lokalt och Vercel
 │   ├── adapters/          canvas.js timeedit.js ladok.js → normaliserat schema
 │   ├── core/              rank.js exams.js degree.js (produktlogiken)
 │   └── data/              mockprofiler (viktor-kth.json, julian-su.json)
