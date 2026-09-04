@@ -106,9 +106,18 @@ async function renderToday() {
 function examBadge(u) {
   switch (u.state) {
     case "registered": return `<span class="badge is-ok">Anmäld</span>`;
-    case "open": return `<span class="badge ${u.daysToClose <= 7 ? "is-danger" : ""}">Stänger ${u.daysToClose <= 0 ? "idag" : "om " + u.daysToClose + " d"}</span>`;
-    case "not_open": return `<span class="badge">Öppnar ${fmtShort(u.registrationOpens)}</span>`;
+    case "open": return `<span class="badge ${u.daysToClose <= 7 ? "is-danger" : ""}">${u.daysToClose <= 0 ? "Idag" : u.daysToClose + " d kvar"}</span>`;
+    case "not_open": return `<span class="badge">Ej öppen</span>`;
     case "missed": return `<span class="badge is-danger">Missad</span>`;
+  }
+}
+
+function examSub(u) {
+  switch (u.state) {
+    case "registered": return `Anmäld · tenta ${fmtDay(u.examDate)}`;
+    case "open": return `Anmälan stänger ${fmtDay(u.registrationCloses)}`;
+    case "not_open": return `Anmälan öppnar ${fmtDay(u.registrationOpens)}`;
+    case "missed": return `Anmälan stängde ${fmtDay(u.registrationCloses)}`;
   }
 }
 
@@ -118,7 +127,7 @@ function renderExamRow(u) {
       <div class="time"><strong>${fmtShort(u.examDate)}</strong>${fmtTime(u.examDate)}</div>
       <div class="main">
         <div class="title">${esc(u.course)} ${esc(u.module)}</div>
-        <div class="sub">Anmälan ${fmtShort(u.registrationOpens)} till ${fmtShort(u.registrationCloses)}</div>
+        <div class="sub">${esc(examSub(u))}</div>
       </div>
       ${examBadge(u)}
     </a>`;
@@ -165,13 +174,13 @@ async function renderDegree() {
     ${d.rests.length ? `
       <h3 class="group-title">Rester</h3>
       <div class="group">${d.rests.map(r => `
-        <div class="row">
+        <div class="row row-stacked">
           <div class="time"><strong>${r.missing.reduce((s, m) => s + m.hp, 0)} hp</strong>saknas</div>
           <div class="main">
-            <div class="title">${esc(r.code)} ${esc(r.name)}</div>
-            <div class="sub">${r.missing.map(m => esc(m.code)).join(", ")}${r.nextChance ? ` · nästa chans ${fmtDay(r.nextChance.examDate)}` : " · inget tillfälle publicerat"}</div>
+            <div class="title">${esc(r.name)}</div>
+            <div class="sub">${esc(r.code)} · ${r.missing.map(m => esc(m.code)).join(", ")}${r.nextChance ? ` · nästa chans ${fmtDay(r.nextChance.examDate)}` : " · inget tillfälle publicerat"}</div>
+            ${r.nextChance ? `<span class="badge ${r.nextChance.registered ? "is-ok" : "is-warn"}">${r.nextChance.registered ? "Anmäld" : "Ej anmäld"}</span>` : ""}
           </div>
-          ${r.nextChance ? `<span class="badge ${r.nextChance.registered ? "is-ok" : "is-warn"}">${r.nextChance.registered ? "Anmäld" : "Ej anmäld"}</span>` : "<span></span>"}
         </div>`).join("")}</div>` : ""}
     <p class="footnote">Räknat på godkända moduler i Ladok. Nominell takt ${d.nominalPace} hp per termin.</p>`;
 }
@@ -193,6 +202,7 @@ async function go(tab) {
     view.innerHTML = `<div class="empty"><strong>Kunde inte hämta data</strong>${esc(e.message)}. Kontrollera att servern kör.</div>`;
   }
   window.scrollTo({ top: 0 });
+  view.focus({ preventScroll: true });
 }
 
 tabs.forEach(t => t.addEventListener("click", () => go(t.dataset.tab)));

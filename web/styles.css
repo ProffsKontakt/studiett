@@ -8,7 +8,9 @@
   --label-3: rgba(60, 60, 67, .3);
   --separator: rgba(60, 60, 67, .29);
   --tint: #0A6C3F;
+  --on-tint: #FFFFFF;
   --danger: #FF3B30;
+  --on-danger: #FFFFFF;
   --warn: #FF9500;
   --radius: 10px;
   --gutter: 16px;
@@ -26,9 +28,34 @@
     --label-3: rgba(235, 235, 245, .3);
     --separator: rgba(84, 84, 88, .6);
     --tint: #30B46E;
+    --on-tint: #000000;
     --danger: #FF453A;
     --warn: #FF9F0A;
   }
+}
+/* Ökad kontrast (HIG Accessibility): systemfärgernas högkontrastvarianter. */
+@media (prefers-contrast: more) {
+  :root {
+    --label-2: rgba(60, 60, 67, .8);
+    --label-3: rgba(60, 60, 67, .55);
+    --separator: rgba(60, 60, 67, .5);
+    --tint: #248A3D;
+    --danger: #D70015;
+    --warn: #C93400;
+  }
+  .badge.is-warn { color: #fff; }
+}
+@media (prefers-contrast: more) and (prefers-color-scheme: dark) {
+  :root {
+    --label-2: rgba(235, 235, 245, .8);
+    --label-3: rgba(235, 235, 245, .55);
+    --separator: rgba(84, 84, 88, .9);
+    --tint: #30DB5B;
+    --danger: #FF6961;
+    --on-danger: #000000;
+    --warn: #FFB340;
+  }
+  .badge.is-warn { color: #000; }
 }
 
 * { box-sizing: border-box; }
@@ -68,6 +95,7 @@ a { color: var(--tint); text-decoration: none; }
 .pronounce span { color: var(--label-3); margin: 0 .1em; }
 
 main { padding: 0 var(--gutter); }
+main:focus { outline: none; }
 
 .large-title {
   font-size: 2.125rem; /* 34 */
@@ -114,7 +142,7 @@ main { padding: 0 var(--gutter); }
   margin-top: 12px;
   padding: 0 16px;
   background: var(--tint);
-  color: #fff;
+  color: var(--on-tint);
   border-radius: 10px;
   font-weight: 600;
 }
@@ -159,7 +187,7 @@ main { padding: 0 var(--gutter); }
 .row .time { font-size: .9375rem; color: var(--label-2); font-variant-numeric: tabular-nums; }
 .row .time strong { display: block; color: var(--label); font-weight: 600; }
 .row .main { min-width: 0; }
-.row .title { font-weight: 500; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.row .title { font-weight: 500; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: break-word; hyphens: auto; }
 a.row { color: inherit; }
 .row .sub { font-size: .875rem; color: var(--label-2); margin-top: 1px; }
 .row .badge {
@@ -171,9 +199,12 @@ a.row { color: inherit; }
   color: var(--label-2);
   white-space: nowrap;
 }
-.badge.is-danger { background: var(--danger); color: #fff; }
+.badge.is-danger { background: var(--danger); color: var(--on-danger); }
 .badge.is-warn { background: var(--warn); color: #000; }
-.badge.is-ok { background: var(--tint); color: #fff; }
+.badge.is-ok { background: var(--tint); color: var(--on-tint); }
+/* Rad med långt namn: statusen ligger under texten istället för i en tredje kolumn. */
+.row-stacked { grid-template-columns: 62px 1fr; }
+.row-stacked .badge { display: inline-block; margin-top: 6px; }
 
 /* Examen */
 .progress {
@@ -201,7 +232,7 @@ a.row { color: inherit; }
 }
 .empty strong { display: block; color: var(--label); font-weight: 600; margin-bottom: 4px; }
 
-.footnote { font-size: .8125rem; color: var(--label-3); margin: 18px var(--gutter) 0; }
+.footnote { font-size: .8125rem; color: var(--label-2); margin: 18px var(--gutter) 0; }
 
 /* Tab bar */
 .tabbar {
@@ -224,7 +255,7 @@ a.row { color: inherit; }
   min-height: 44px;
   padding: 4px 8px;
   color: var(--label-2);
-  font-size: .625rem;
+  font-size: .6875rem; /* 11, HIG-minimum */
   font-weight: 500;
 }
 .tab svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
