@@ -23,12 +23,15 @@ Semantiska namn. Ljust och mörkt läge via `prefers-color-scheme`.
 | `--surface-2` | #E5E5EA | #2C2C2E | Sekundära ytor |
 | `--label` | #000000 | #FFFFFF | Primär text |
 | `--label-2` | rgba(60,60,67,.6) | rgba(235,235,245,.6) | Sekundär text |
-| `--label-3` | rgba(60,60,67,.3) | rgba(235,235,245,.3) | Tertiär text, separatorer |
+| `--label-3` | rgba(60,60,67,.3) | rgba(235,235,245,.3) | Separatorer och inaktiva element. Aldrig läsbar text: 1,7:1 i ljust läge |
 | `--tint` | #0A6C3F | #30B46E | Studiett-grönt. Den enda varumärkesfärgen. Bara för interaktiva element och "klart"-status. |
+| `--on-tint` | #FFFFFF | #000000 | Text på tint-fyllda ytor. Vitt på det mörka tint-gröna ger 2,7:1; svart ger 7,9:1. |
 | `--danger` | #FF3B30 | #FF453A | iOS systemRed. Bara för "kostar dig en tentaomgång". |
 | `--warn` | #FF9500 | #FF9F0A | iOS systemOrange. Deadline inom 48 h. |
 
 Regel: `--tint` betyder alltid "tryckbar" eller "klart". Den används aldrig som dekoration.
+
+Ökad kontrast (`prefers-contrast: more`): `--label-2` och `--label-3` höjs till .8 respektive .55 i alfa, och tint/danger/warn byts till systemfärgernas högkontrastvarianter (grön #248A3D/#30DB5B, röd #D70015/#FF6961, orange #C93400/#FFB340). Sekundärtexten ligger annars på 3,4:1 i ljust läge, vilket HIG bara tillåter om ett högkontrastläge finns.
 
 ### Typografi
 
@@ -41,7 +44,8 @@ Regel: `--tint` betyder alltid "tryckbar" eller "klart". Den används aldrig som
 | Headline | 17 / 600 | Radrubrik |
 | Body | 17 / 400 | Brödtext |
 | Subhead | 15 / 400 | Sekundär rad |
-| Footnote | 13 / 400 | Tid, källa |
+| Footnote | 13 / 400 | Tid, källa, förklarande fotnot. Alltid i `--label-2`. |
+| Fliketikett | 11 / 500 | Bottenflikar. HIG-minimum på mobil är 11 pt. |
 
 Dynamic Type respekteras genom att allt sätts i `rem` och roten följer systemet.
 
