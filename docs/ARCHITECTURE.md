@@ -47,6 +47,6 @@ Tentaanmälan-larmet är en push-produkt. Web Push fungerar på iOS 16.4+ bara o
 
 ## Vad som medvetet inte finns
 
-- Ingen databas. JSON-filer per student tills auth finns.
+- Ingen databas. JSON-filer per student tills auth finns. Schemat för när den behövs, med storleksräkning och retention, står i `docs/DATA.md`.
 - Ingen LLM i produktlogiken. Rangordningen är deterministisk och förklarbar. Den enda modellanvändningen är avskrift av Ladok-intyg (`docs/DECISIONS.md` §9).
 - Ingen inloggning. Lokal körning, eller Vercel bakom Vercels egen inloggning.
