@@ -41,4 +41,4 @@ web/data/                      larosaten.json (handskriven, verifierade adresser
 - **Ladok**: inget officiellt student-API. Största risken i projektet. Tre spår i `docs/DECISIONS.md` §3. Spår 2 är byggt: intyg som PDF läses av en modell (`server/adapters/ladok.js`, `docs/DECISIONS.md` §9). Modellen skriver av, all status räknas deterministiskt.
 - Studenten väljer nivå och lärosäte under Kopplingar (`docs/DECISIONS.md` §12); det styr förifyllda adresser och direktlänkar. Lägg till eller rätta lärosäten i `web/data/larosaten.json`, aldrig i `app.js`.
 - Riktiga kopplingar görs i vyn Kopplingar och bor i studentens webbläsare (`docs/DECISIONS.md` §11), eller i `.env` enligt `.env.example` vid lokal körning. Saknas båda körs servern på mockdata.
-- Innan en ny adapter byggs: läs `docs/SOURCES.md` för åtkomsttyp och vad systemet kan mata. Gymnasiesystem är avtalsspår, inte studentspår.
+- Innan en ny adapter byggs: läs `docs/SOURCES.md` för åtkomsttyp och vad systemet kan mata, och `docs/API.md` för endpoints, tokenregler och direktlänkar. Gymnasiesystem är avtalsspår, inte studentspår.
