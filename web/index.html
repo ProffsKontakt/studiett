@@ -7,6 +7,7 @@
 <meta name="description" content="Stud i ett. Alla dina studier i ett.">
 <meta name="theme-color" content="#F4F1EA" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0E0E0C" media="(prefers-color-scheme: dark)">
+<script>/* Studentens val av utseende, innan första målningen så att inget blinkar. */try{var t=localStorage.getItem("studiett.theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <link rel="preload" href="/fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -17,31 +18,63 @@
 <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-<header class="brand">
-  <h1 class="wordmark">Studiett</h1>
-  <p class="pronounce" aria-label="Uttalas stud i ett">Stud <span>·</span> i <span>·</span> ett</p>
+<header class="topbar">
+  <div class="brand">
+    <h1 class="wordmark">Studiett</h1>
+    <p class="pronounce" aria-label="Uttalas stud i ett">Stud <span>·</span> i <span>·</span> ett</p>
+  </div>
+
+  <nav class="tabbar" aria-label="Huvudnavigering">
+    <button class="tab is-active" data-tab="today" aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+      <span>Idag</span>
+    </button>
+    <button class="tab" data-tab="exams">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h6M9 16h6"/></svg>
+      <span>Tentor</span>
+    </button>
+    <button class="tab" data-tab="degree">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/></svg>
+      <span>Examen</span>
+    </button>
+    <button class="tab" data-tab="connections">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7V4M15 7V4"/><path d="M6 7h12v4a6 6 0 0 1-12 0z"/><path d="M12 17v4"/></svg>
+      <span>Kopplingar</span>
+    </button>
+  </nav>
+
+  <div class="toolbar" role="toolbar" aria-label="Verktyg">
+    <button class="tool" id="tool-refresh" type="button" aria-label="Uppdatera" title="Uppdatera">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg>
+    </button>
+    <button class="tool" id="tool-notices" type="button" aria-label="Notiser" title="Notiser" aria-haspopup="dialog" aria-expanded="false" aria-controls="notices">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
+      <span class="count" id="notice-count" hidden></span>
+    </button>
+    <button class="tool" id="tool-theme" type="button" aria-label="Byt till mörkt läge" title="Utseende">
+      <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+    </button>
+    <button class="tool" id="tool-logout" type="button" aria-label="Logga ut" title="Logga ut">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"/><path d="M15 8l4 4-4 4M19 12H9"/></svg>
+    </button>
+  </div>
 </header>
+
+<div class="popover" id="notices" role="dialog" aria-label="Notiser" hidden></div>
 
 <main id="view" tabindex="-1"></main>
 
-<nav class="tabbar" aria-label="Huvudnavigering">
-  <button class="tab is-active" data-tab="today" aria-current="page">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
-    <span>Idag</span>
-  </button>
-  <button class="tab" data-tab="exams">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h6M9 16h6"/></svg>
-    <span>Tentor</span>
-  </button>
-  <button class="tab" data-tab="degree">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/></svg>
-    <span>Examen</span>
-  </button>
-  <button class="tab" data-tab="connections">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7V4M15 7V4"/><path d="M6 7h12v4a6 6 0 0 1-12 0z"/><path d="M12 17v4"/></svg>
-    <span>Kopplingar</span>
-  </button>
-</nav>
+<dialog id="logout-dialog" aria-labelledby="logout-title">
+  <form method="dialog">
+    <h2 id="logout-title">Logga ut?</h2>
+    <p>Kopplingar, intyg och inställningar tas bort från den här webbläsaren. Inget finns sparat någon annanstans.</p>
+    <div class="actions">
+      <button class="button-text" value="cancel" type="submit">Avbryt</button>
+      <button class="action is-danger" value="confirm" type="submit">Logga ut</button>
+    </div>
+  </form>
+</dialog>
 
 <script src="/app.js" type="module"></script>
 </body>
