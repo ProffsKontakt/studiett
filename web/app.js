@@ -1,5 +1,6 @@
 // Studiett klient. Ingen produktlogik här: allt rangordnas och räknas på servern (server/core).
-// Klienten översätter JSON till fyra vyer och inget mer: tre funktioner och Kopplingar.
+// Klienten översätter JSON till fyra vyer och en verktygsrad: tre funktioner, Kopplingar och
+// uppdatera/notiser/utseende/logga ut i toppraden.
 
 const view = document.getElementById("view");
 const tabs = [...document.querySelectorAll(".tab")];
@@ -398,6 +399,7 @@ async function renderConnections(ladokMessage) {
     <p class="date-line">Allt du klistrar in sparas bara i den här webbläsaren.</p>
     ${CONNECTIONS.map(def => renderConnectionGroup(def, c[def.id], openConnection === def.id, receipts[def.id])).join("")}
     ${renderLadokPanel(ladokMessage)}
+    ${renderAppearance()}
     <h3 class="group-title">Inte tillgängliga än</h3>
     <div class="group">
       ${UNAVAILABLE.map(u => `<div class="row"><div class="main"><div class="title">${esc(u.name)}</div><div class="sub">${esc(u.why)}</div></div></div>`).join("")}
@@ -479,12 +481,137 @@ function refreshLine(fetchedAt) {
 
 // Appen öppnas i tunnelbanan efter en natt i bakgrunden. Är datan äldre än fem minuter hämtas den om.
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible" && Date.now() - lastLoadedAt > 5 * 60 * 1000) go(currentTab, { silent: true });
+  if (document.visibilityState === "visible" && Date.now() - lastLoadedAt > 5 * 60 * 1000) { go(currentTab, { silent: true }); refreshNotices(); }
 });
 view.addEventListener("click", e => {
   if (e.target.closest("[data-refresh]")) go(currentTab);
   const link = e.target.closest("[data-go]");
   if (link) go(link.dataset.go);
+});
+
+/* ---------- Verktygsrad: uppdatera, notiser, utseende, logga ut ---------- */
+
+// Utseende. Standard är att följa systemet (HIG Dark Mode avråder från egen inställning; den finns
+// för att studenten bett om den). Valet sparas i webbläsaren och läses i index.html före första målningen.
+const THEME_KEY = "studiett.theme";
+const themeMeta = [...document.querySelectorAll('meta[name="theme-color"]')].map(m => ({ m, content: m.content, media: m.media }));
+const darkQuery = matchMedia("(prefers-color-scheme: dark)");
+function themeGet() { try { const t = localStorage.getItem(THEME_KEY); return t === "light" || t === "dark" ? t : "system"; } catch { return "system"; } }
+function effectiveTheme() { const t = themeGet(); return t === "system" ? (darkQuery.matches ? "dark" : "light") : t; }
+function applyTheme(pref) {
+  try { if (pref === "system") localStorage.removeItem(THEME_KEY); else localStorage.setItem(THEME_KEY, pref); } catch {}
+  if (pref === "system") delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = pref;
+  const eff = effectiveTheme();
+  // Statusfältet i PWA-läge följer valet, inte bara systemet.
+  for (const { m, content, media } of themeMeta) {
+    if (pref === "system") { m.content = content; m.media = media; }
+    else { m.content = eff === "dark" ? "#0E0E0C" : "#F4F1EA"; m.removeAttribute("media"); }
+  }
+  const label = eff === "dark" ? "Byt till ljust läge" : "Byt till mörkt läge";
+  themeButton.setAttribute("aria-label", label);
+  themeButton.title = label;
+  view.querySelectorAll("[data-theme-pick]").forEach(b => b.setAttribute("aria-checked", String(b.dataset.themePick === pref)));
+}
+const themeButton = document.getElementById("tool-theme");
+themeButton.addEventListener("click", () => applyTheme(effectiveTheme() === "dark" ? "light" : "dark"));
+darkQuery.addEventListener("change", () => applyTheme(themeGet()));
+view.addEventListener("click", e => { const b = e.target.closest("[data-theme-pick]"); if (b) applyTheme(b.dataset.themePick); });
+
+function renderAppearance() {
+  const pref = themeGet();
+  const opt = (v, t) => `<button type="button" role="radio" aria-checked="${pref === v}" data-theme-pick="${v}">${t}</button>`;
+  return `
+    <h3 class="group-title">Utseende</h3>
+    <div class="group">
+      <div class="row">
+        <div class="main"><div class="title">Ljust eller mörkt</div><div class="sub">Följ systemet är standard. Knappen i toppraden växlar.</div></div>
+        <div class="segmented" role="radiogroup" aria-label="Utseende">${opt("system", "System")}${opt("light", "Ljust")}${opt("dark", "Mörkt")}</div>
+      </div>
+    </div>`;
+}
+
+// Notiser: det som kostar något att missa, samlat under klockan. Rangordningen kommer från servern;
+// här väljs bara vilka rader som visas, med samma regler som markeringarna i Idag och Tentor.
+const noticePanel = document.getElementById("notices");
+const noticeButton = document.getElementById("tool-notices");
+const noticeCount = document.getElementById("notice-count");
+noticePanel.tabIndex = -1;
+let notices = [];
+
+function noticesFrom(today, exams) {
+  const out = [];
+  for (const it of [today?.top, ...(today?.items ?? [])].filter(Boolean)) {
+    const sev = severity(it);
+    if (sev) out.push({ sev, at: it.at, title: it.title, sub: [kickerFor(it), it.course].filter(Boolean).join(" · "), tab: "today" });
+  }
+  for (const u of exams?.alerts ?? []) {
+    out.push({ sev: u.daysToClose <= 7 ? "danger" : "warn", at: u.registrationCloses, title: `${u.course} ${u.module}`, sub: `Inte anmäld · stänger ${fmtDay(u.registrationCloses)}`, tab: "exams" });
+  }
+  return out.sort((a, b) => new Date(a.at) - new Date(b.at));
+}
+
+async function refreshNotices() {
+  try {
+    const [today, exams] = await Promise.all([load("/api/today"), load("/api/exams")]);
+    notices = noticesFrom(today, exams);
+  } catch { return; }
+  renderNoticeCount();
+  if (!noticePanel.hidden) renderNotices();
+}
+
+function renderNoticeCount() {
+  const n = notices.length;
+  noticeCount.hidden = n === 0;
+  noticeCount.textContent = n > 99 ? "99+" : String(n);
+  noticeCount.className = "count" + (notices.some(x => x.sev === "danger") ? " is-danger" : "");
+  noticeButton.setAttribute("aria-label", n ? `Notiser, ${n} att bevaka` : "Notiser");
+}
+
+function renderNotices() {
+  noticePanel.innerHTML = `
+    <div class="popover-title"><h2>Att bevaka</h2><span class="popover-sub">${notices.length ? `${notices.length} inom en vecka` : ""}</span></div>
+    ${notices.length ? `<div class="group">${notices.map(n => `
+      <button class="row" type="button" data-go="${n.tab}">
+        <div class="time"><strong>${fmtShort(n.at)}</strong>${fmtTime(n.at)}</div>
+        <div class="main"><div class="title">${esc(n.title)}</div><div class="sub">${esc(n.sub)}</div></div>
+        <span class="badge is-${n.sev}">${n.sev === "danger" ? "Viktigt" : "Snart"}</span>
+      </button>`).join("")}</div>`
+    : `<div class="empty"><strong>Inget att bevaka</strong>Inget stänger och ingen deadline är nära.</div>`}
+    <p class="footnote">Samma regler som markeringarna i Idag och Tentor. Inga pushnotiser skickas.</p>`;
+}
+
+function openNotices(open) {
+  noticePanel.hidden = !open;
+  noticeButton.setAttribute("aria-expanded", String(open));
+  if (open) { renderNotices(); (noticePanel.querySelector("button") ?? noticePanel).focus(); }
+  else noticeButton.focus();
+}
+noticeButton.addEventListener("click", () => openNotices(noticePanel.hidden));
+noticePanel.addEventListener("click", e => { const b = e.target.closest("[data-go]"); if (b) { openNotices(false); go(b.dataset.go); } });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !noticePanel.hidden) openNotices(false); });
+document.addEventListener("click", e => { if (!noticePanel.hidden && !noticePanel.contains(e.target) && !noticeButton.contains(e.target)) openNotices(false); });
+
+// Uppdatera: hämtar om vyn och notiserna. Den gamla vyn står kvar tills den nya kommit.
+const refreshButton = document.getElementById("tool-refresh");
+refreshButton.addEventListener("click", async () => {
+  refreshButton.classList.add("is-busy"); refreshButton.disabled = true;
+  await Promise.all([go(currentTab, { silent: true }), refreshNotices()]);
+  refreshButton.classList.remove("is-busy"); refreshButton.disabled = false;
+});
+
+// Logga ut: det finns inget konto att logga ut från, så det betyder att allt som sparats i
+// webbläsaren tas bort: kopplingar, intyg, utseende och offline-kopior. Bekräftas först (HIG Modality).
+const logoutDialog = document.getElementById("logout-dialog");
+document.getElementById("tool-logout").addEventListener("click", () => logoutDialog.showModal());
+logoutDialog.addEventListener("close", async () => {
+  if (logoutDialog.returnValue !== "confirm") return;
+  try { for (const k of Object.keys(localStorage)) if (k.startsWith("studiett.")) localStorage.removeItem(k); } catch {}
+  try { for (const k of await caches.keys()) if (k.startsWith("studiett-data")) await caches.delete(k); } catch {}
+  applyTheme("system");
+  notices = []; renderNoticeCount();
+  openConnection = null; lastLoadedAt = 0;
+  await go("today");
+  refreshNotices();
 });
 
 /* ---------- Navigation ---------- */
@@ -495,6 +622,7 @@ let currentTab = "today";
 async function go(tab, { silent = false } = {}) {
   const switching = tab !== currentTab || !view.children.length;
   if (switching) for (const k of Object.keys(receipts)) delete receipts[k];
+  if (switching && !noticePanel.hidden) openNotices(false);
   currentTab = tab;
   tabs.forEach(t => {
     const on = t.dataset.tab === tab;
@@ -515,6 +643,7 @@ async function go(tab, { silent = false } = {}) {
 }
 
 tabs.forEach(t => t.addEventListener("click", () => go(t.dataset.tab)));
-go(routes[location.hash.slice(1)] ? location.hash.slice(1) : "today");
+applyTheme(themeGet());
+go(routes[location.hash.slice(1)] ? location.hash.slice(1) : "today").then(refreshNotices);
 
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");
