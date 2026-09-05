@@ -360,7 +360,7 @@ function searchInstitutions(list, q, limit = 12) {
   return hits.slice(0, limit);
 }
 
-const SYSTEM_NAME = { canvas: "Canvas", moodle: "Moodle", blackboard: "Blackboard", itslearning: "Itslearning", timeedit: "TimeEdit", kronox: "KronoX", other: "ett eget system" };
+const SYSTEM_NAME = { canvas: "Canvas", moodle: "Moodle", blackboard: "Blackboard", itslearning: "Itslearning", lisam: "Lisam", timeedit: "TimeEdit", kronox: "KronoX", other: "ett eget system" };
 
 function renderProfile() {
   const p = profileGet();
@@ -414,23 +414,27 @@ function wireProfile() {
   const hint = view.querySelector("[data-inst-hint]");
   if (!input) return;
   const level = profileGet().level;
+  const hintDefault = hint.textContent;
   let results = [], active = -1;
   const close = () => { list.hidden = true; input.setAttribute("aria-expanded", "false"); input.removeAttribute("aria-activedescendant"); active = -1; };
   const paint = () => {
     list.innerHTML = results.map((r, i) => `<li role="option" id="inst-opt-${i}" aria-selected="${i === active}" data-i="${i}"><span class="combo-name">${esc(r.name)}</span><span class="combo-sub">${esc(r.sub)}</span></li>`).join("");
     list.hidden = results.length === 0;
     input.setAttribute("aria-expanded", String(results.length > 0));
-    if (active >= 0) input.setAttribute("aria-activedescendant", `inst-opt-${active}`); else input.removeAttribute("aria-activedescendant");
+    if (active >= 0) {
+      input.setAttribute("aria-activedescendant", `inst-opt-${active}`);
+      list.children[active]?.scrollIntoView({ block: "nearest" }); // den aktiva raden syns alltid; listan rullar med pilarna
+    } else input.removeAttribute("aria-activedescendant");
   };
   const choose = r => {
-    profileSet({ level, institution: { id: r.id, name: r.name, sub: r.sub, canvas: r.canvas ?? null, lms: r.lms ?? null, schedule: r.schedule ?? null } });
+    profileSet({ level, institution: { id: r.id, name: r.name, sub: r.sub, canvas: r.canvas ?? null, lms: r.lms ?? null, lmsUrl: r.lmsUrl ?? null, schedule: r.schedule ?? null } });
     lastLoadedAt = 0;
     receipts.profile = `${r.name} valt.`;
     renderConnections();
   };
   input.addEventListener("input", async () => {
     const q = input.value;
-    if (!q.trim()) { results = []; paint(); return; }
+    if (!q.trim()) { results = []; active = -1; paint(); hint.textContent = hintDefault; return; }
     let all;
     try { all = await institutionList(level); } catch (e) { hint.textContent = e.message; return; }
     if (input.value !== q) return; // ett nyare tecken hann före
@@ -465,9 +469,11 @@ function connectionDefs() {
   const defs = [
     { id: "canvas", name: "Canvas", what: "Kurser, inlämningar och kalender",
       link: canvas ? { url: `${canvas}/profile/settings`, label: "Skapa token i Canvas" } : null,
-      note: inst && !canvas && inst.lms && inst.lms !== "canvas" ? `${inst.name} använder ${SYSTEM_NAME[inst.lms] ?? inst.lms}, inte Canvas. Koppla kalendern under Annan kalender.` : "",
+      note: inst && !canvas && inst.lms && inst.lms !== "canvas" ? `${inst.name} använder ${SYSTEM_NAME[inst.lms] ?? inst.lms}, inte Canvas. Koppla kalendern under ${inst.lmsUrl ? SYSTEM_NAME[inst.lms] : "Annan kalender"} ovan.` : "",
       fields: [
-        { key: "baseUrl", label: "Adress", type: "url", placeholder: canvas ?? "https://canvas.kth.se", value: canvas ?? "", autocomplete: "url", hint: canvas ? `Förifyllt för ${inst.name}.` : "KTH: canvas.kth.se · SU: canvas.su.se" },
+        canvas
+          ? { key: "baseUrl", label: "Adress", type: "static", value: canvas, hint: `${inst.name} kör Canvas här. Byt lärosäte under Profil om det är fel.` }
+          : { key: "baseUrl", label: "Adress", type: "url", placeholder: "https://canvas.kth.se", value: "", autocomplete: "url", hint: "Välj lärosäte under Profil så fylls adressen i. Annars: KTH canvas.kth.se, SU canvas.su.se." },
         { key: "token", label: "Åtkomsttoken", type: "password", placeholder: "Klistra in tokenen", autocomplete: "off", hint: "Under Godkända integrationer: + Ny åtkomsttoken. Tokenen visas bara en gång; klistra in den här direkt." },
       ] },
     { id: "timeedit", name: "TimeEdit", what: "Schema",
@@ -480,15 +486,34 @@ function connectionDefs() {
       fields: [
         { key: "icalUrl", label: "Prenumerationslänk", type: "url", placeholder: "https://schema.…/setup/jsp/SchemaICAL.ics?…", autocomplete: "url", hint: sched?.system === "kronox" ? "Avancerad sök → välj kurs eller program → Prenumerera (iCal) och klistra in länken här." : "KronoX → Avancerad sök → Prenumerera (iCal). Borås, Gävle, Kristianstad, Väst, Konstfack, LTU, Malmö, MDU, Södertörn, Örebro." },
       ] },
-    { id: "ical", name: "Annan kalender", what: level === "gymnasium" ? "Schema från SchoolSoft, Vklass, Itslearning eller Google" : "Schema från Moodle, Itslearning, Outlook eller Google",
-      link: null,
-      fields: [
-        { key: "icalUrl", label: "iCal-länk", type: "url", placeholder: "https://…/calendar.ics", autocomplete: "url", hint: level === "gymnasium" ? "SchoolSoft: Kalender → Prenumerera. Vklass: Schema → Prenumerera (ics). Länken ska sluta på .ics eller ge en kalender." : "Alla kalendrar som kan exportera iCal fungerar. Länken ska sluta på .ics eller ge en kalender." },
-      ] },
+    calendarDef(inst, level),
   ];
-  // Det system lärosätet faktiskt använder först. Gymnasiet börjar med kalenderlänken.
-  const first = level === "gymnasium" ? "ical" : sched?.system === "kronox" ? "kronox" : null;
+  // Det system lärosätet faktiskt använder först. Gymnasiet och lärosäten utan Canvas börjar med kalenderlänken.
+  const first = level === "gymnasium" || (inst && !canvas && inst.lmsUrl) ? "ical" : sched?.system === "kronox" ? "kronox" : null;
   return first ? [defs.find(d => d.id === first), ...defs.filter(d => d.id !== first)] : defs;
+}
+
+// Kalenderkopplingen tar lärosätets egen lärplattforms namn när den är känd (Moodle, Itslearning,
+// Blackboard) och länkar rakt till sidan där iCal-länken hämtas. Formatet är alltid iCal; adaptern är densamma.
+const CALENDAR_SYSTEMS = {
+  moodle:      { path: "/calendar/export.php", label: "Öppna kalenderexporten i Moodle", hint: "Exportera kalender → Alla händelser → Hämta kalender-URL. Klistra in den här." },
+  itslearning: { path: "", label: "Öppna Itslearning", hint: "Kalender → … → Prenumerera på iCal-flöde. Klistra in länken här." },
+  blackboard:  { path: "", label: "Öppna Blackboard", hint: "Kalender → Inställningar → Dela kalender (ICS). Klistra in länken här." },
+  lisam:       { path: "", label: "Öppna Lisam", hint: "Lisam har ingen egen kalenderlänk. Använd schemat från TimeEdit ovan, eller en Outlook-kalender publicerad som ICS." },
+};
+function calendarDef(inst, level) {
+  const sys = inst?.lms && CALENDAR_SYSTEMS[inst.lms] && inst.lmsUrl ? inst.lms : null;
+  const c = sys ? CALENDAR_SYSTEMS[sys] : null;
+  return {
+    id: "ical",
+    name: sys ? SYSTEM_NAME[sys] : "Annan kalender",
+    what: sys ? `${inst.name}s lärplattform · kalender som iCal` : level === "gymnasium" ? "Schema från SchoolSoft, Vklass, Itslearning eller Google" : "Schema från Moodle, Itslearning, Outlook eller Google",
+    link: c ? { url: inst.lmsUrl + c.path, label: c.label } : null,
+    fields: [
+      { key: "icalUrl", label: "iCal-länk", type: "url", placeholder: "https://…/calendar.ics", autocomplete: "url",
+        hint: c ? c.hint : level === "gymnasium" ? "SchoolSoft: Kalender → Prenumerera. Vklass: Schema → Prenumerera (ics). Länken ska sluta på .ics eller ge en kalender." : "Alla kalendrar som kan exportera iCal fungerar. Länken ska sluta på .ics eller ge en kalender." },
+    ],
+  };
 }
 const UNAVAILABLE = [
   { name: "Ladok-anmälan", why: "Ladok tillåter inte integrationer. Tentafönster måste tills vidare läggas in för hand." },
@@ -510,7 +535,13 @@ function connStatusText(conn) {
 }
 
 function renderConnectionGroup(def, conn, open, receipt) {
-  const fields = def.fields.map(f => `
+  const fields = def.fields.map(f => f.type === "static" ? `
+    <div class="field">
+      <span class="field-label">${esc(f.label)}</span>
+      <span class="field-static">${esc(f.value.replace(/^https:\/\//, ""))}</span>
+      <input type="hidden" name="${f.key}" value="${esc(f.value)}">
+      <span class="field-hint">${esc(f.hint)}</span>
+    </div>` : `
     <label class="field">
       <span class="field-label">${esc(f.label)}</span>
       <input name="${f.key}" type="${f.type}" inputmode="${f.type === "url" ? "url" : "text"}" autocapitalize="off" autocorrect="off" spellcheck="false"
@@ -621,7 +652,7 @@ async function adoptInstitutionFromCanvas(baseUrl) {
   try {
     const host = new URL(baseUrl).origin;
     const hit = (await institutionList("universitet")).find(i => i.canvas === host);
-    if (hit) profileSet({ level: "universitet", institution: { id: hit.id, name: hit.name, sub: hit.sub, canvas: hit.canvas, lms: hit.lms, schedule: hit.schedule } });
+    if (hit) profileSet({ level: "universitet", institution: { id: hit.id, name: hit.name, sub: hit.sub, canvas: hit.canvas, lms: hit.lms, lmsUrl: hit.lmsUrl ?? null, schedule: hit.schedule } });
   } catch {}
 }
 
