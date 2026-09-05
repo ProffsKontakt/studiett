@@ -6,7 +6,7 @@ Studiett lagrar så lite som möjligt men låtsas inte att det lagrar ingenting.
 
 - Källsystemen är master. Vi skriver aldrig tillbaka till dem i MVP.
 - Vi cachar normaliserad data per student i högst 24 h för att kunna skicka notiser och räkna trender. Cache kan raderas av studenten när som helst.
-- Tokens lagras krypterade på servern, aldrig i klienten. I MVP: `.env` på utvecklarens maskin, läst av `server/env.js` utan beroenden.
+- Tokens lagras i studentens webbläsare och skickas med varje anrop; servern använder dem och glömmer dem (`docs/DECISIONS.md` §11). `.env` finns kvar som reserv för lokal körning. När databas och auth byggs flyttar tokens till servern, krypterade.
 - Riktiga svar cachas i minne i `CACHE_TTL_MIN` minuter (standard 10) per student. Misslyckade anrop cachas inte. Varje API-svar bär `sources`, per källa `ok`, `mock:<profil>`, `saknas` eller feltexten, så att klienten kan säga vilken koppling som inte svarade.
 
 ## Lager
@@ -18,7 +18,7 @@ En adapter per källsystem. Varje adapter exporterar `fetchAll(credentials) → 
 | Källa | Åtkomst | Status |
 |---|---|---|
 | Canvas | REST API, personlig access token. Ingen CORS, måste gå via server. | Inkopplad bakom `CANVAS_TOKEN` i `.env`. Otestad mot riktig token. |
-| TimeEdit | iCal-prenumerationslänk som studenten hämtar själv | Inkopplad bakom `TIMEEDIT_ICAL_URL`. Parsern testad mot lokal .ics med TZID, sommar- och vintertid. Otestad mot riktig länk. |
+| TimeEdit, KronoX, valfri iCal | iCal-prenumerationslänk som studenten hämtar själv | Samma adapter (`timeedit.js`) med `source` per koppling. Kopplas i vyn Kopplingar eller via `TIMEEDIT_ICAL_URL`. Otestad mot riktig länk. |
 | Ladok | Inget officiellt studentAPI. (a) studentens egen session mot ladok.se, (b) intyg som PDF, (c) avtal med Ladokkonsortiet. | (b) byggd: `POST /api/ladok-import` läser resultat- och registreringsintyg med en modell (`docs/DECISIONS.md` §9). Resultatet bor i studentens webbläsare och skickas med som `ladok` i anropen. `LADOK_MOCK=viktor` ger tentafönster tills (a) finns. |
 | Athena / Itslearning (SU) | REST API finns för Itslearning, kräver lärosätets godkännande | Ej påbörjad |
 | Daisy / iLearn (SU DSV) | Daisy: skrapning. iLearn: Moodle web services om aktiverat. | Ej påbörjad |
@@ -37,7 +37,7 @@ Allt uppströms trycks in i fem typer: `Course`, `Event`, `Assignment`, `Result`
 
 ### 4. API (`server/server.js`)
 
-`GET /api/today`, `GET /api/exams`, `GET /api/degree`. JSON. Samma vägar tar `POST { ladok }` med importerade Ladok-data som då ersätter mockens program och kurser. `POST /api/ladok-import { pdf }` läser ett intyg och svarar med Ladok-data utan att spara något. Svaren byggs i `server/api.js` som både den lokala servern och Vercels funktioner i `api/` anropar. Ingen auth i MVP: lokalt, eller på Vercel bakom Deployment Protection (`docs/DECISIONS.md` §8). Auth är första sak som byggs när fler än vi två kör den.
+`GET /api/today`, `GET /api/exams`, `GET /api/degree`. JSON. Samma vägar tar `POST { ladok, connections }` med studentens egna Ladok-data och kopplingar. `POST /api/connect/verify` testar en koppling och ger ett kvitto utan att spara något. `POST /api/ladok-import { pdf }` läser ett intyg och svarar med Ladok-data utan att spara något. Svaren byggs i `server/api.js` som både den lokala servern och Vercels funktioner i `api/` anropar. Ingen auth i MVP: lokalt, eller på Vercel bakom Deployment Protection (`docs/DECISIONS.md` §8). Auth är första sak som byggs när fler än vi två kör den.
 
 ### 5. PWA (`web/`)
 
@@ -51,4 +51,4 @@ Tentaanmälan-larmet är en push-produkt. Web Push fungerar på iOS 16.4+ bara o
 
 - Ingen databas. JSON-filer per student tills auth finns. Schemat för när den behövs, med storleksräkning och retention, står i `docs/DATA.md`.
 - Ingen LLM i produktlogiken. Rangordningen är deterministisk och förklarbar. Den enda modellanvändningen är avskrift av Ladok-intyg (`docs/DECISIONS.md` §9).
-- Ingen inloggning. Lokal körning, eller Vercel bakom Vercels egen inloggning.
+- Ingen inloggning. Var och en har sina kopplingar i sin egen webbläsare (§11), så en publik deploy visar mockdata för främlingar och egna data bara för den som kopplat.

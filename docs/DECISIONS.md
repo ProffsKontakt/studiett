@@ -52,3 +52,15 @@ Ett resultatintyg visar bara godkända resultat. Rester syns först när ett reg
 ## 10. Indigo och solgult, Optimera-släkt (2026-09-05)
 
 Grundarna vill att Studiett känns som en syskonprodukt till Optimera Energi: indigo (#3648C3) och solgult (#FFDD6C) på benvitt (#F4F1EA), display-serifen Fraunces. Det ersätter det gröna i §6-eran. Vad som inte ändras: strukturen är fortfarande Apples (grupperade listor, bottenflikar, systemfont i brödtext, 44 pt tryckytor, mörkt läge), skillen granskar fortfarande varje UI-ändring, och gult är fortfarande bara tillåtet på det enda stora elementet. Alla kontraster är räknade och står i `docs/DESIGN.md`. Fraunces självhostas (SIL OFL) så att inga anrop går till Google.
+
+## 11. Kopplingar bor i studentens webbläsare (2026-09-05)
+
+En fjärde vy, Kopplingar, där studenten själv klistrar in Canvas-token och kalenderlänkar (TimeEdit, KronoX, valfri iCal) och laddar upp Ladok-intyg. Uppgifterna sparas i webbläsarens localStorage och skickas med varje anrop till vårt API, som använder dem för att hämta från källorna och sedan glömmer dem. Servern lagrar aldrig en token. Varje anrop verifieras först (`POST /api/connect/verify`) så att studenten får ett kvitto: namn och antal kurser för Canvas, antal händelser för en kalender.
+
+Det ersätter "tokens i `.env`" som enda väg och gör att flera personer kan använda samma deploy utan databas eller inloggning: var och en ser bara det egna. `.env` finns kvar som reserv för lokal körning.
+
+Vad det inte är: säkert mot skadlig kod i sidan. En token i localStorage kan läsas av vilket skript som helst på samma origin. Därför: inga tredjepartsskript, ingen analys, ingen CDN. Fonten självhostas. Databas och auth (`docs/DATA.md`) flyttar tokens till servern när de byggs.
+
+Servern hämtar bara från https-adresser på publika värdar, med tio sekunders tidsgräns och två megabyte tak (`server/net.js`), eftersom studenten själv anger adresserna.
+
+Kopplingar är inte en fjärde funktion (§2). Det är inställningar, och HIG Settings säger att kontorelaterade val hör hemma i en egen yta.

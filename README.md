@@ -33,7 +33,7 @@ node server/server.js          # startar på http://localhost:3000 med mockdata
 STUDENT=julian node server/server.js   # mockprofil SU/DSV istället för KTH
 ```
 
-Riktiga kopplingar: `cp .env.example .env`, fyll i `CANVAS_TOKEN` och `TIMEEDIT_ICAL_URL`, starta om. Saknas Ladok-data läggs de från en mockprofil med `LADOK_MOCK=viktor`. Vilka källor som svarade syns i `sources` i varje API-svar och längst ned i Idag-vyn om något gick fel.
+Riktiga kopplingar: öppna fliken Kopplingar i appen och klistra in token och länkar; de sparas bara i din webbläsare. Alternativt lokalt: `cp .env.example .env`, fyll i `CANVAS_TOKEN` och `TIMEEDIT_ICAL_URL`, starta om. Saknas Ladok-data läggs de från en mockprofil med `LADOK_MOCK=viktor`. Vilka källor som svarade syns i `sources` i varje API-svar och längst ned i Idag-vyn om något gick fel.
 
 Öppna i Safari på iPhone → Dela → Lägg till på hemskärmen. Då körs den som app, exakt som Optimera Hub.
 

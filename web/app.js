@@ -1,5 +1,5 @@
 // Studiett klient. Ingen produktlogik här: allt rangordnas och räknas på servern (server/core).
-// Klienten översätter JSON till tre vyer och inget mer.
+// Klienten översätter JSON till fyra vyer och inget mer: tre funktioner och Kopplingar.
 
 const view = document.getElementById("view");
 const tabs = [...document.querySelectorAll(".tab")];
@@ -21,12 +21,28 @@ const LADOK_KEY = "studiett.ladok";
 function ladokGet() { try { return JSON.parse(localStorage.getItem(LADOK_KEY) || "null"); } catch { return null; } }
 function ladokSet(v) { try { if (v) localStorage.setItem(LADOK_KEY, JSON.stringify(v)); else localStorage.removeItem(LADOK_KEY); } catch {} }
 
+/* ---------- Kopplingar i webbläsaren ---------- */
+// Token och länkar sparas bara här, i studentens egen webbläsare, och skickas med varje
+// anrop. Servern lagrar dem aldrig. Koppla bort = borta.
+const CONN_KEY = "studiett.connections";
+function connGet() { try { return JSON.parse(localStorage.getItem(CONN_KEY) || "null") ?? {}; } catch { return {}; } }
+function connSet(v) { try { if (v && Object.keys(v).length) localStorage.setItem(CONN_KEY, JSON.stringify(v)); else localStorage.removeItem(CONN_KEY); } catch {} }
+function connPayload() {
+  const c = connGet();
+  const out = {};
+  if (c.canvas?.token) out.canvas = { baseUrl: c.canvas.baseUrl, token: c.canvas.token };
+  for (const k of ["timeedit", "kronox", "ical"]) if (c[k]?.icalUrl) out[k] = { icalUrl: c[k].icalUrl };
+  if (c.canvas?.name) out.profile = { name: c.canvas.name, institution: c.canvas.institution };
+  return Object.keys(out).length ? out : null;
+}
+
 async function load(path) {
   const ladok = ladokGet();
+  const connections = connPayload();
   let res;
   try {
-    res = ladok
-      ? await fetch(path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ladok }) })
+    res = ladok || connections
+      ? await fetch(path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ladok, connections }) })
       : await fetch(path);
   } catch {
     throw new Error("Ingen anslutning.");
@@ -82,7 +98,7 @@ async function importIntygFile(file, statusEl, button) {
     ladokSet(mergeIntyg(ladokGet(), data));
     const hp = data.courses.flatMap(c => c.modules).filter(m => m.passed).reduce((s, m) => s + (m.hp || 0), 0);
     statusEl.textContent = `${KIND_NAME[data.kind] ?? "Intyg"} importerat: ${data.courses.length} kurser${hp ? `, ${hp} hp godkända` : ""}.${data.warnings.length ? " " + data.warnings.join(" ") : ""}`;
-    await renderDegree(statusEl.textContent);
+    await renderConnections(statusEl.textContent);
   } catch (e) {
     statusEl.className = "status is-danger";
     statusEl.textContent = `Intyget kunde inte läsas. ${e.message}`;
@@ -120,7 +136,7 @@ function renderLadokPanel(message) {
         </div>
       </div>
     </div>
-    <p class="footnote">Intygen finns i Ladok för studenter under Intyg. Tentaanmälan syns inte i intyg.</p>`;
+    <p class="footnote">Ladok: intyg som PDF. Intygen finns i Ladok för studenter under Intyg. Tentaanmälan syns inte i intyg.</p>`;
 }
 
 function wireLadokPanel() {
@@ -131,17 +147,17 @@ function wireLadokPanel() {
   if (!pick || !file) return;
   pick.addEventListener("click", () => file.click());
   file.addEventListener("change", () => { if (file.files[0]) importIntygFile(file.files[0], status, pick); });
-  if (clear) clear.addEventListener("click", async () => { ladokSet(null); await renderDegree("Ladok-data borttagna."); });
+  if (clear) clear.addEventListener("click", async () => { ladokSet(null); await renderConnections("Ladok-data borttagna."); });
 }
 
 /* ---------- Källor ---------- */
 
-const SOURCE_NAME = { canvas: "Canvas", timeedit: "TimeEdit", ladok: "Ladok" };
+const SOURCE_NAME = { canvas: "Canvas", timeedit: "TimeEdit", kronox: "KronoX", ical: "Kalendern", ladok: "Ladok" };
 function sourceNotice(sources) {
   if (!sources) return "";
   const failed = Object.entries(sources).filter(([, v]) => v !== "ok" && !String(v).startsWith("mock:") && !String(v).startsWith("intyg:") && v !== "saknas");
   if (failed.length === 0) return "";
-  return `<p class="footnote">${failed.map(([k, v]) => `${SOURCE_NAME[k] ?? k} kunde inte hämtas (${esc(v)}). Kontrollera kopplingen i .env.`).join(" ")}</p>`;
+  return `<p class="footnote">${failed.map(([k, v]) => `${SOURCE_NAME[k] ?? k} kunde inte hämtas (${esc(v)}). <button class="button-text is-inline" type="button" data-go="connections">Kontrollera kopplingen</button>`).join(" ")}</p>`;
 }
 
 /* ---------- Idag ---------- */
@@ -278,8 +294,7 @@ async function renderExams() {
 async function renderDegree(message) {
   const d = await load("/api/degree");
   if (!d.program) {
-    view.innerHTML = `<h1 class="large-title">Examen</h1><div class="empty"><strong>Inget program kopplat</strong>Ladda upp dina intyg från Ladok så räknar vi ut var du ligger.</div>${renderLadokPanel(message)}`;
-    wireLadokPanel();
+    view.innerHTML = `<h1 class="large-title">Examen</h1><div class="empty"><strong>Inget program kopplat</strong>Ladda upp dina intyg från Ladok under Kopplingar, så räknar vi ut var du ligger. <button class="button-text is-inline" type="button" data-go="connections">Öppna Kopplingar</button></div>`;
     return;
   }
   view.innerHTML = `
@@ -308,14 +323,141 @@ async function renderDegree(message) {
             ${r.nextChance ? `<span class="badge ${r.nextChance.registered ? "is-ok" : "is-warn"}">${r.nextChance.registered ? "Anmäld" : "Ej anmäld"}</span>` : ""}
           </div>
         </div>`).join("")}</div>` : ""}
-    <p class="footnote">Räknat på godkända moduler i Ladok. Nominell takt ${d.nominalPace} hp per termin.</p>
-    ${renderLadokPanel(message)}`;
+    <p class="footnote">Räknat på godkända moduler i Ladok. Nominell takt ${d.nominalPace} hp per termin. ${d.sources?.ladok?.startsWith("intyg:") ? "" : '<button class="button-text is-inline" type="button" data-go="connections">Ladda upp intyg</button>'}</p>`;
+}
+
+/* ---------- Kopplingar ---------- */
+
+// Vad varje koppling behöver och var studenten hittar det. Texten är instruktionen; inga bilder.
+const CONNECTIONS = [
+  { id: "canvas", name: "Canvas", what: "Kurser, inlämningar och kalender", fields: [
+      { key: "baseUrl", label: "Adress", type: "url", placeholder: "https://canvas.kth.se", autocomplete: "url", hint: "KTH: canvas.kth.se · SU: canvas.su.se" },
+      { key: "token", label: "Åtkomsttoken", type: "password", placeholder: "Klistra in tokenen", autocomplete: "off", hint: "Canvas → Konto → Inställningar → Godkända integrationer → + Ny åtkomsttoken. Visas bara en gång." },
+    ] },
+  { id: "timeedit", name: "TimeEdit", what: "Schema", fields: [
+      { key: "icalUrl", label: "Prenumerationslänk", type: "url", placeholder: "https://cloud.timeedit.net/…/ri….ics", autocomplete: "url", hint: "KTH: kth.se/schema → Prenumerera. Andra lärosäten: sök schema i TimeEdit → Prenumerera." },
+    ] },
+  { id: "kronox", name: "KronoX", what: "Schema", fields: [
+      { key: "icalUrl", label: "Prenumerationslänk", type: "url", placeholder: "https://kronox.…/setup/jsp/SchemaICAL.ics?…", autocomplete: "url", hint: "KronoX → Avancerad sök → Prenumerera (iCal). Borås, Gävle, Kristianstad, Väst, Konstfack, LTU, Malmö, MDU, Södertörn, Örebro." },
+    ] },
+  { id: "ical", name: "Annan kalender", what: "Schema från Moodle, Itslearning, Outlook eller Google", fields: [
+      { key: "icalUrl", label: "iCal-länk", type: "url", placeholder: "https://…/calendar.ics", autocomplete: "url", hint: "Alla kalendrar som kan exportera iCal fungerar. Länken ska sluta på .ics eller ge en kalender." },
+    ] },
+];
+const UNAVAILABLE = [
+  { name: "Ladok-anmälan", why: "Ladok tillåter inte integrationer. Tentafönster måste tills vidare läggas in för hand." },
+  { name: "Athena (SU)", why: "Fasas ut under 2026. SU byter till Canvas." },
+  { name: "Daisy (SU DSV)", why: "Inget API och ingen kalenderlänk." },
+  { name: "Skola24, Unikum, InfoMentor", why: "Kräver avtal med skolans huvudman." },
+];
+
+function connStatusText(conn) {
+  if (!conn) return "Inte kopplad";
+  if (conn.name) return `Kopplad · ${conn.name}${conn.courses != null ? ` · ${conn.courses} kurser` : ""}`;
+  if (conn.upcoming != null) return `Kopplad · ${conn.upcoming} kommande händelser`;
+  return "Kopplad";
+}
+
+function renderConnectionGroup(def, conn, open, receipt) {
+  const fields = def.fields.map(f => `
+    <label class="field">
+      <span class="field-label">${esc(f.label)}</span>
+      <input name="${f.key}" type="${f.type}" inputmode="${f.type === "url" ? "url" : "text"}" autocapitalize="off" autocorrect="off" spellcheck="false"
+        autocomplete="${f.autocomplete}" placeholder="${esc(f.placeholder)}" value="${f.type === "password" ? "" : esc(conn?.[f.key] ?? "")}" ${f.key === "baseUrl" ? "" : "required"}>
+      <span class="field-hint">${esc(f.hint)}</span>
+    </label>`).join("");
+  return `
+    <div class="group">
+      <div class="row">
+        <div class="main">
+          <div class="title">${esc(def.name)}</div>
+          <div class="sub">${esc(def.what)}</div>
+          <div class="sub">${conn ? '<span class="badge is-ok is-inline">Kopplad</span>' : ""}${esc(connStatusText(conn).replace(/^Kopplad( · )?/, ""))}</div>
+        </div>
+        <button class="button-text" type="button" data-toggle="${def.id}" aria-expanded="${open ? "true" : "false"}" aria-controls="form-${def.id}">${conn ? "Ändra" : "Koppla"}</button>
+      </div>
+      ${receipt ? `<p class="status conn-receipt" role="status">${esc(receipt)}</p>` : ""}
+      <form class="conn-form" id="form-${def.id}" data-kind="${def.id}" ${open ? "" : "hidden"}>
+        ${fields}
+        <p class="status" role="status" data-status></p>
+        <div class="actions">
+          <button class="action" type="submit">Testa och spara</button>
+          ${conn ? `<button class="button-text" type="button" data-remove="${def.id}">Koppla bort</button>` : ""}
+        </div>
+      </form>
+    </div>`;
+}
+
+let openConnection = null;
+const receipts = {}; // kvitto per koppling, visas under raden tills vyn lämnas
+
+async function renderConnections(ladokMessage) {
+  const c = connGet();
+  view.innerHTML = `
+    <h1 class="large-title">Kopplingar</h1>
+    <p class="date-line">Allt du klistrar in sparas bara i den här webbläsaren.</p>
+    ${CONNECTIONS.map(def => renderConnectionGroup(def, c[def.id], openConnection === def.id, receipts[def.id])).join("")}
+    ${renderLadokPanel(ladokMessage)}
+    <h3 class="group-title">Inte tillgängliga än</h3>
+    <div class="group">
+      ${UNAVAILABLE.map(u => `<div class="row"><div class="main"><div class="title">${esc(u.name)}</div><div class="sub">${esc(u.why)}</div></div></div>`).join("")}
+    </div>
+    <p class="footnote">Vilka system som finns och vad de kan ge: docs/SOURCES.md i repot.</p>`;
   wireLadokPanel();
+  wireConnections();
+}
+
+function wireConnections() {
+  view.querySelectorAll("[data-toggle]").forEach(btn => btn.addEventListener("click", () => {
+    const id = btn.dataset.toggle;
+    openConnection = openConnection === id ? null : id;
+    renderConnections();
+    if (openConnection) view.querySelector(`#form-${id} input`)?.focus();
+  }));
+  view.querySelectorAll("[data-remove]").forEach(btn => btn.addEventListener("click", () => {
+    const c = connGet(); delete c[btn.dataset.remove]; connSet(c); openConnection = null; receipts[btn.dataset.remove] = "Bortkopplad."; renderConnections();
+  }));
+  view.querySelectorAll("form.conn-form").forEach(form => form.addEventListener("submit", async e => {
+    e.preventDefault();
+    const kind = form.dataset.kind;
+    const status = form.querySelector("[data-status]");
+    const submit = form.querySelector('[type="submit"]');
+    const data = Object.fromEntries(new FormData(form).entries());
+    const existing = connGet()[kind];
+    if (kind === "canvas" && !data.token && existing?.token) data.token = existing.token; // tomt lösenordsfält = behåll
+    submit.disabled = true;
+    status.className = "status"; status.setAttribute("aria-busy", "true");
+    status.textContent = "Testar kopplingen…";
+    try {
+      const res = await fetch("/api/connect/verify", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ kind, ...data }) });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || `Servern svarade ${res.status}.`);
+      const c = connGet();
+      c[kind] = kind === "canvas"
+        ? { baseUrl: body.baseUrl, token: data.token, name: body.name, courses: body.courses, institution: institutionFor(body.baseUrl), at: Date.now() }
+        : { icalUrl: data.icalUrl.trim(), upcoming: body.upcoming, events: body.events, at: Date.now() };
+      connSet(c);
+      openConnection = null;
+      lastLoadedAt = 0;
+      receipts[kind] = kind === "canvas" ? `Kopplad som ${body.name} med ${body.courses} aktiva kurser.` : `${body.upcoming} kommande händelser${body.next ? ", nästa " + fmtDay(body.next).replace(/\.$/, "") : ""}.`;
+      renderConnections();
+    } catch (err) {
+      status.className = "status is-danger";
+      status.textContent = `Kunde inte koppla. ${err.message}`;
+      submit.disabled = false;
+    } finally {
+      status.removeAttribute("aria-busy");
+    }
+  }));
+}
+
+function institutionFor(baseUrl) {
+  try { const h = new URL(baseUrl).hostname; if (h.endsWith("kth.se")) return "KTH"; if (h.endsWith("su.se")) return "Stockholms universitet"; if (h.endsWith("lu.se")) return "Lunds universitet"; if (h.endsWith("gu.se")) return "Göteborgs universitet"; if (h.endsWith("uu.se")) return "Uppsala universitet"; if (h.endsWith("umu.se")) return "Umeå universitet"; return h.replace(/^canvas\./, ""); } catch { return ""; }
 }
 
 /* ---------- Laddning och uppdatering ---------- */
 
-const TITLES = { today: "Idag", exams: "Tentor", degree: "Examen" };
+const TITLES = { today: "Idag", exams: "Tentor", degree: "Examen", connections: "Kopplingar" };
 let lastLoadedAt = 0;
 
 // Visas direkt vid flikbyte, innan svaret kommit (HIG Loading: visa något så fort som möjligt).
@@ -339,15 +481,20 @@ function refreshLine(fetchedAt) {
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible" && Date.now() - lastLoadedAt > 5 * 60 * 1000) go(currentTab, { silent: true });
 });
-view.addEventListener("click", e => { if (e.target.closest("[data-refresh]")) go(currentTab); });
+view.addEventListener("click", e => {
+  if (e.target.closest("[data-refresh]")) go(currentTab);
+  const link = e.target.closest("[data-go]");
+  if (link) go(link.dataset.go);
+});
 
 /* ---------- Navigation ---------- */
 
-const routes = { today: renderToday, exams: renderExams, degree: renderDegree };
+const routes = { today: renderToday, exams: renderExams, degree: renderDegree, connections: () => renderConnections() };
 let currentTab = "today";
 
 async function go(tab, { silent = false } = {}) {
   const switching = tab !== currentTab || !view.children.length;
+  if (switching) for (const k of Object.keys(receipts)) delete receipts[k];
   currentTab = tab;
   tabs.forEach(t => {
     const on = t.dataset.tab === tab;
@@ -356,7 +503,7 @@ async function go(tab, { silent = false } = {}) {
   });
   location.hash = tab;
   // Vid flikbyte visas skelettet direkt. Vid tyst uppdatering står den gamla vyn kvar tills den nya kommit.
-  if (switching && !silent) renderSkeleton(tab);
+  if (switching && !silent && tab !== "connections") renderSkeleton(tab);
   try {
     await routes[tab]();
     lastLoadedAt = Date.now();

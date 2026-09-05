@@ -1,6 +1,6 @@
 // Cachar appskalet. API-svar cachas som "senast känt" så appen visar något offline.
-const SHELL = "studiett-shell-v4";
-const DATA = "studiett-data-v4";
+const SHELL = "studiett-shell-v5";
+const DATA = "studiett-data-v5";
 const SHELL_FILES = ["/", "/index.html", "/styles.css", "/app.js", "/manifest.webmanifest", "/icons/icon.svg", "/fonts/fraunces-latin.woff2"];
 
 self.addEventListener("install", e => {
@@ -13,7 +13,7 @@ self.addEventListener("activate", e => {
 self.addEventListener("fetch", e => {
   const url = new URL(e.request.url);
   if (url.pathname.startsWith("/api/")) {
-    if (url.pathname === "/api/ladok-import") return; // aldrig cachat, aldrig offline
+    if (url.pathname === "/api/ladok-import" || url.pathname.startsWith("/api/connect/")) return; // aldrig cachat, aldrig offline
     // Svaret sparas under vägen oavsett metod (POST bär Ladok-data), så "senast känt" finns offline.
     const key = new Request(url.pathname);
     e.respondWith(fetch(e.request).then(res => {

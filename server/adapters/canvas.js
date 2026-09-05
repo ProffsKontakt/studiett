@@ -2,22 +2,30 @@
 // Körs på servern: Canvas svarar inte med CORS-headers för tokenanrop från webbläsare.
 // Docs: https://canvas.instructure.com/doc/api/
 //
-// KTH: https://canvas.kth.se
+// KTH: https://canvas.kth.se   SU (från HT26): https://canvas.su.se
+import { publicHttpsUrl, fetchJson, NetError } from "../net.js";
 
-async function get(base, token, path) {
-  const res = await fetch(`${base}/api/v1${path}`, { headers: { Authorization: `Bearer ${token}` } });
-  if (!res.ok) throw new Error(`Canvas ${res.status} ${path}`);
-  return res.json();
+function base(baseUrl) {
+  const url = publicHttpsUrl(baseUrl || "https://canvas.kth.se", { maxLength: 200 });
+  return url.origin;
+}
+
+async function get(baseUrl, token, path) {
+  const r = await fetchJson(`${baseUrl}/api/v1${path}`, { headers: { Authorization: `Bearer ${token}` } });
+  if (r.status === 401) throw new NetError(401, "Canvas godkände inte tokenen. Skapa en ny under Konto → Inställningar.");
+  if (r.status !== 200 || r.json === null) throw new NetError(502, `Canvas svarade ${r.status} på ${path.split("?")[0]}.`);
+  return r.json;
 }
 
 export async function fetchAll({ baseUrl, token }) {
-  const courses = await get(baseUrl, token, "/courses?enrollment_state=active&per_page=50");
+  const origin = base(baseUrl);
+  const courses = await get(origin, token, "/courses?enrollment_state=active&per_page=50");
   const assignments = [];
   const events = [];
 
   for (const c of courses) {
     const code = (c.course_code ?? "").split(/\s/)[0]; // "SF1624 HT26" -> "SF1624"
-    const as = await get(baseUrl, token, `/courses/${c.id}/assignments?per_page=100&include[]=submission`);
+    const as = await get(origin, token, `/courses/${c.id}/assignments?per_page=100&include[]=submission`);
     for (const a of as) {
       if (!a.due_at) continue;
       assignments.push({
@@ -31,7 +39,7 @@ export async function fetchAll({ baseUrl, token }) {
         url: a.html_url,
       });
     }
-    const evs = await get(baseUrl, token, `/calendar_events?context_codes[]=course_${c.id}&per_page=100&all_events=true`);
+    const evs = await get(origin, token, `/calendar_events?context_codes[]=course_${c.id}&per_page=100&all_events=true`);
     for (const e of evs) {
       if (!e.start_at) continue;
       events.push({
@@ -60,4 +68,13 @@ export async function fetchAll({ baseUrl, token }) {
     assignments,
     events,
   };
+}
+
+// Kvitto vid koppling: studentens namn och antal aktiva kurser. Tokenen returneras aldrig.
+export async function verify({ baseUrl, token }) {
+  if (!token || String(token).length < 20) throw new NetError(400, "Klistra in hela tokenen från Canvas.");
+  const origin = base(baseUrl);
+  const me = await get(origin, token, "/users/self");
+  const courses = await get(origin, token, "/courses?enrollment_state=active&per_page=50");
+  return { ok: true, name: me.name ?? me.short_name ?? "", courses: courses.length, baseUrl: origin };
 }
