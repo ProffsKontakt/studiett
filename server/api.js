@@ -2,6 +2,9 @@
 // serverless-funktioner (api/*.js), så att båda svarar exakt likadant.
 import { loadBundle } from "./adapters/index.js";
 import { extractIntyg, normalizeIntyg, MODEL } from "./adapters/ladok.js";
+import * as canvas from "./adapters/canvas.js";
+import * as timeedit from "./adapters/timeedit.js";
+import { NetError } from "./net.js";
 import { rank } from "./core/rank.js";
 import { examStatus } from "./core/exams.js";
 import { degree } from "./core/degree.js";
@@ -38,6 +41,18 @@ export class ClientError extends Error {
   constructor(status, message) { super(message); this.status = status; }
 }
 
+// POST /api/connect/verify { kind, baseUrl?, token?, icalUrl? } -> kvitto. Inget sparas.
+export async function verifyConnection(body) {
+  const kind = String(body?.kind ?? "");
+  switch (kind) {
+    case "canvas": return canvas.verify({ baseUrl: body.baseUrl, token: String(body.token ?? "").trim() });
+    case "timeedit":
+    case "kronox":
+    case "ical": return timeedit.verify({ icalUrl: body.icalUrl, source: kind });
+    default: throw new ClientError(400, "Okänd koppling.");
+  }
+}
+
 // Läser JSON-kroppen. Vercels Node-runtime kan redan ha tolkat req.body; lokalt läser vi strömmen.
 export async function readJson(req) {
   if (req.body !== undefined && req.body !== null) return typeof req.body === "string" ? JSON.parse(req.body) : req.body;
@@ -68,17 +83,21 @@ export async function respond(pathname, req, res, deps = {}) {
       const body = await readJson(req);
       return send(res, 200, await importIntyg(body, deps));
     }
-    // Idag, Tentor, Examen: GET utan overlay, eller POST { ladok } med importerade Ladok-data.
+    if (pathname === "/api/connect/verify") {
+      if (method !== "POST") return send(res, 405, { error: "Använd POST." });
+      return send(res, 200, await verifyConnection(await readJson(req)));
+    }
+    // Idag, Tentor, Examen: GET utan overlay, eller POST { ladok, connections } med studentens egna data.
     let overlay = null;
     if (method === "POST") {
       const body = await readJson(req);
-      overlay = body?.ladok ?? null;
+      overlay = { ladok: body?.ladok ?? null, connections: body?.connections ?? null };
     }
     const data = await handle(pathname, new Date(), overlay);
     if (!data) return send(res, 404, { error: "Okänd väg." });
     return send(res, 200, data);
   } catch (e) {
-    const status = e instanceof ClientError ? e.status : 500;
+    const status = e instanceof ClientError || e instanceof NetError ? e.status : 500;
     if (status === 500) console.error(String(e));
     return send(res, status, { error: status === 500 ? "Servern kunde inte bygga svaret." : e.message });
   }

@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { createHash } from "node:crypto";
 import * as canvas from "./canvas.js";
 import * as timeedit from "./timeedit.js";
 
@@ -23,12 +24,23 @@ export function merge(base, ...parts) {
   return out;
 }
 
-// Riktiga kopplingar finns när minst en av dem är satt i .env. Annars mockprofil.
-function liveConfig(env = process.env) {
+// Kopplingar kommer i första hand från studentens webbläsare (skickas med varje anrop,
+// lagras aldrig här), i andra hand från .env. Finns ingen av dem körs mockprofilen.
+export function liveConfig(env = process.env, connections = null) {
+  const c = connections && typeof connections === "object" ? connections : {};
   const sources = [];
-  if (env.CANVAS_TOKEN) sources.push({ name: "canvas", fetch: () => canvas.fetchAll({ baseUrl: env.CANVAS_BASE_URL ?? "https://canvas.kth.se", token: env.CANVAS_TOKEN }) });
-  if (env.TIMEEDIT_ICAL_URL) sources.push({ name: "timeedit", fetch: () => timeedit.fetchAll({ icalUrl: env.TIMEEDIT_ICAL_URL }) });
+  const canvasConn = c.canvas?.token ? c.canvas : env.CANVAS_TOKEN ? { baseUrl: env.CANVAS_BASE_URL ?? "https://canvas.kth.se", token: env.CANVAS_TOKEN } : null;
+  if (canvasConn) sources.push({ name: "canvas", fetch: () => canvas.fetchAll(canvasConn) });
+  const timeeditUrl = c.timeedit?.icalUrl || env.TIMEEDIT_ICAL_URL;
+  if (timeeditUrl) sources.push({ name: "timeedit", fetch: () => timeedit.fetchAll({ icalUrl: timeeditUrl, source: "timeedit" }) });
+  if (c.kronox?.icalUrl) sources.push({ name: "kronox", fetch: () => timeedit.fetchAll({ icalUrl: c.kronox.icalUrl, source: "kronox" }) });
+  if (c.ical?.icalUrl) sources.push({ name: "ical", fetch: () => timeedit.fetchAll({ icalUrl: c.ical.icalUrl, source: "ical" }) });
   return sources;
+}
+
+function cacheKey(student, connections) {
+  const h = createHash("sha256").update(JSON.stringify(connections ?? null)).digest("hex").slice(0, 16);
+  return `live:${student}:${h}`;
 }
 
 const cache = new Map(); // key -> { at, bundle }
@@ -36,14 +48,15 @@ const cache = new Map(); // key -> { at, bundle }
 // overlay = Ladok-data som studenten importerat från intyg (skickas med från klienten,
 // lagras aldrig på servern). Den ersätter program och kurser från mock/LADOK_MOCK.
 export async function loadBundle(student = process.env.STUDENT ?? "viktor", env = process.env, overlay = null) {
-  const sources = liveConfig(env);
-  const bundle = sources.length === 0 ? await loadMock(student) : await loadLive(student, env, sources);
-  return overlay ? applyOverlay(bundle, overlay) : bundle;
+  const connections = overlay?.connections ?? null;
+  const sources = liveConfig(env, connections);
+  const bundle = sources.length === 0 ? await loadMock(student) : await loadLive(student, env, sources, connections);
+  return overlay?.ladok ? applyOverlay(bundle, overlay.ladok) : bundle;
 }
 
-async function loadLive(student, env, sources) {
+async function loadLive(student, env, sources, connections) {
   const ttl = Number(env.CACHE_TTL_MIN ?? 10) * MINUTE;
-  const key = `live:${student}`;
+  const key = cacheKey(student, connections);
   const hit = cache.get(key);
   if (hit && Date.now() - hit.at < ttl) return { ...hit.bundle, cached: true };
 
@@ -73,7 +86,7 @@ async function loadLive(student, env, sources) {
 
   const base = {
     fetchedAt: new Date().toISOString(),
-    student: { id: student, name: env.STUDENT_NAME ?? "", institution: env.INSTITUTION ?? "KTH" },
+    student: { id: student, name: connections?.profile?.name ?? env.STUDENT_NAME ?? "", institution: connections?.profile?.institution ?? env.INSTITUTION ?? "KTH" },
     courses: [], events: [], assignments: [], examRegistrations: [],
   };
   const bundle = { ...merge(base, ...parts), sources: status };

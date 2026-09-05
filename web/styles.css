@@ -132,7 +132,27 @@ a.row { color: inherit; }
 .badge.is-warn { background: var(--warn); color: var(--on-warn); }
 .badge.is-ok { background: var(--tint-fill); color: var(--on-tint); }
 .row-stacked { grid-template-columns: 62px 1fr; }
+/* Rader utan tidskolumn (Kopplingar): text, badge, knapp. */
+.row:has(> .main:first-child) { grid-template-columns: 1fr auto auto; }
+.row:has(> .main:first-child) + .row::before { left: var(--gutter); }
 .row-stacked .badge { display: inline-block; margin-top: 6px; }
+
+/* Formulär i Kopplingar: en etikett över varje fält, systemets tangentbord, 44 pt höjd. */
+.conn-form { padding: 4px var(--gutter) 16px; border-top: 1px solid var(--separator); display: grid; gap: 12px; }
+.conn-form[hidden] { display: none; }
+.row .badge.is-inline { display: inline-block; margin-right: 6px; vertical-align: 1px; }
+.conn-receipt { padding: 0 var(--gutter) 12px; margin: -4px 0 0; }
+.field { display: grid; gap: 4px; }
+.field-label { font-size: .8125rem; font-weight: 600; color: var(--label-2); }
+.field input {
+  font: inherit; min-height: 44px; padding: 0 14px; border-radius: 12px;
+  border: 1px solid var(--separator); background: var(--bg); color: var(--label); width: 100%;
+}
+.field input::placeholder { color: var(--label-3); }
+.field input:focus { outline: 3px solid var(--tint); outline-offset: 0; border-color: transparent; }
+.field-hint { font-size: .8125rem; color: var(--label-2); }
+.conn-form .actions { margin-top: 2px; }
+.row .button-text { justify-self: end; }
 
 /* Skelett medan svaret hämtas: samma radmått som riktiga rader, inga rörelser. */
 .skeleton .row strong, .skeleton .row .title, .skeleton .row .sub { background: var(--surface-2); border-radius: 6px; color: transparent; }

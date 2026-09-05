@@ -55,7 +55,7 @@ Dynamic Type respekteras genom att allt sätts i `rem` och roten följer systeme
 
 ### Layout
 
-Grupperade listor med 20 pt radie, 16 pt marginal, pillerformade knappar och badges. Bottenflikar: Idag, Tentor, Examen. Safe areas via `env(safe-area-inset-*)`. Tryckytor minst 44 pt.
+Grupperade listor med 20 pt radie, 16 pt marginal, pillerformade knappar och badges. Bottenflikar: Idag, Tentor, Examen, Kopplingar. Safe areas via `env(safe-area-inset-*)`. Tryckytor minst 44 pt.
 
 Från 900 pt bredd blir bottenflikarna ett sidofält till vänster om innehållet (HIG Layout: convertible tab bar), med ordmärket ovanför. Innehållskolumnen är högst 680 pt. Samma DOM, bara CSS.
 
@@ -76,13 +76,15 @@ Från 900 pt bredd blir bottenflikarna ett sidofält till vänster om innehålle
 │ │ 15:00 Inlämning lab2 │ │
 │ └──────────────────────┘ │
 │                          │
-│  Idag    Tentor   Examen │  tab bar
+│ Idag Tentor Examen Kopplingar │  tab bar
 └──────────────────────────┘
 ```
 
 Vänsterjusterat genomgående. Ingen centrering utom i tomma tillstånd.
 
 Knappar: `.action` är den fyllda indigoknappen, en per vy. `.button-text` är indigotext med 44 pt tryckyta för sekundära handlingar som "Ta bort Ladok-data". Statusrader (`.status`) står i sekundärtext direkt under det de beskriver, i `--danger` när något gick fel. Filval går via systemets filväljare, aldrig en egen.
+
+Formulär (Kopplingar): en etikett över varje fält, en hjälprad under, 44 pt fälthöjd, `--bg` som fältbakgrund på `--surface`, fokusring i tint. Token i lösenordsfält som aldrig förifylls (HIG Entering data). Fälttyp `url` ger rätt tangentbord. Knappen säger vad som händer: "Testa och spara", och kvittot står i statusraden under formuläret.
 
 ### Rörelse
 

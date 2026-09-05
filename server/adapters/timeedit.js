@@ -1,6 +1,9 @@
-// TimeEdit adapter. Studenten hämtar sin iCal-prenumerationslänk i TimeEdit
-// (Prenumerera → kopiera länk). Vi hämtar och parsar. Ingen inloggning behövs.
-// KTH: https://cloud.timeedit.net/kth/web/student/
+// iCal-adapter för scheman. TimeEdit och KronoX ger båda en prenumerationslänk (webcal/ics)
+// som studenten hämtar själv under "Prenumerera". Samma parser tar också vilken annan
+// kalender som helst som exporterar iCal (Moodle, Itslearning, SchoolSoft, Vklass, Outlook, Google).
+// Ingen inloggning behövs; länken är hemligheten.
+// KTH: https://cloud.timeedit.net/kth/web/student/   KronoX: https://kronox.se/
+import { publicHttpsUrl, fetchText, NetError } from "../net.js";
 
 const TYPE_MAP = [
   [/tenta|exam|kontrollskrivning|KS/i, "exam"],
@@ -34,7 +37,7 @@ function unfold(text) {
   return text.replace(/\r?\n[ \t]/g, "");
 }
 
-export function parseIcal(text) {
+export function parseIcal(text, source = "timeedit") {
   const events = [];
   const blocks = unfold(text).split("BEGIN:VEVENT").slice(1);
   for (const b of blocks) {
@@ -43,16 +46,18 @@ export function parseIcal(text) {
       return m ? m[1].trim().replace(/\\,/g, ",").replace(/\\n/g, " ") : "";
     };
     const summary = get("SUMMARY");
-    const codeMatch = summary.match(/\b([A-Z]{2}\d{4})\b/);
+    const codeMatch = summary.match(/\b([A-Z]{2}\d{4}[A-Z]?)\b/);
     const type = TYPE_MAP.find(([re]) => re.test(summary))?.[1] ?? "other";
+    const start = icalDate(get("DTSTART"));
+    if (!start) continue;
     events.push({
-      id: `timeedit:${get("UID")}`,
-      source: "timeedit",
+      id: `${source}:${get("UID") || start}`,
+      source,
       course: codeMatch?.[1],
       type,
       title: summary,
-      start: icalDate(get("DTSTART")),
-      end: icalDate(get("DTEND")),
+      start,
+      end: icalDate(get("DTEND")) ?? start,
       location: get("LOCATION") || undefined,
       mandatory: /oblig/i.test(summary + get("DESCRIPTION")),
     });
@@ -60,8 +65,25 @@ export function parseIcal(text) {
   return events;
 }
 
-export async function fetchAll({ icalUrl }) {
-  const res = await fetch(icalUrl);
-  if (!res.ok) throw new Error(`TimeEdit ${res.status}`);
-  return { events: parseIcal(await res.text()) };
+const NAMES = { timeedit: "TimeEdit", kronox: "KronoX", ical: "Kalendern" };
+
+async function fetchCalendar(icalUrl, source) {
+  const url = publicHttpsUrl(icalUrl);
+  const r = await fetchText(url, { headers: { accept: "text/calendar, */*" } });
+  const name = NAMES[source] ?? "Kalendern";
+  if (r.status !== 200) throw new NetError(r.status === 404 ? 404 : 502, `${name} svarade ${r.status}.`);
+  if (!/BEGIN:VCALENDAR/.test(r.text)) throw new NetError(422, `${name} svarade, men inte med en kalender. Kontrollera att det är prenumerationslänken (.ics), inte sidan.`);
+  return r.text;
+}
+
+export async function fetchAll({ icalUrl, source = "timeedit" }) {
+  return { events: parseIcal(await fetchCalendar(icalUrl, source), source) };
+}
+
+// Kvitto vid koppling: hur många händelser länken ger, och när nästa är.
+export async function verify({ icalUrl, source = "timeedit" }) {
+  const events = parseIcal(await fetchCalendar(icalUrl, source), source);
+  const now = Date.now();
+  const upcoming = events.filter(e => new Date(e.start).getTime() >= now).sort((a, b) => a.start.localeCompare(b.start));
+  return { ok: true, events: events.length, upcoming: upcoming.length, next: upcoming[0]?.start ?? null, courses: [...new Set(events.map(e => e.course).filter(Boolean))] };
 }
