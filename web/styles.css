@@ -250,7 +250,7 @@ a.row { color: inherit; }
 .footnote { font-size: .8125rem; color: var(--label-2); margin: 18px var(--gutter) 0; }
 
 /* Bottenflikar på mobil */
-.tabbar {
+.tabbar { z-index: 10;
   position: fixed; left: 0; right: 0; bottom: 0;
   display: flex; justify-content: space-around;
   padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
@@ -297,3 +297,25 @@ a.row { color: inherit; }
 .segmented button[aria-checked="true"] { background: var(--tint-fill); color: var(--on-tint); font-weight: 600; }
 .segmented button:hover:not([aria-checked="true"]) { color: var(--label); }
 button.row { font: inherit; color: inherit; }
+
+/* Profil: sökbar lista över lärosäten (combobox + listbox enligt ARIA). Träffarna ligger i ett kort under fältet. */
+.row-form { grid-template-columns: 1fr !important; }
+.combo { position: relative; }
+.group:has(.combo) { overflow: visible; } /* träfflistan får sticka ut under kortet */
+.combo input[type="search"] { -webkit-appearance: none; appearance: none; }
+.combo-list {
+  list-style: none; margin: 4px 0 0; padding: 6px; position: absolute; left: 0; right: 0; top: calc(100% - 22px); z-index: 5;
+  background: var(--surface); border: 1px solid var(--separator); border-radius: var(--radius-row); box-shadow: var(--shadow); max-height: 320px; overflow: auto;
+}
+.combo-list[hidden] { display: none; }
+.combo-list li { display: flex; flex-direction: column; justify-content: center; min-height: 44px; padding: 8px 12px; border-radius: 10px; cursor: pointer; }
+.combo-list li:hover, .combo-list li[aria-selected="true"] { background: var(--surface-2); }
+.combo-name { font-weight: 500; }
+.combo-sub { font-size: .8125rem; color: var(--label-2); }
+.button-text.is-link { justify-self: start; min-height: 32px; }
+/* Smal skärm: segmentkontrollen får en egen rad under texten och fyller bredden. */
+@media (max-width: 699px) {
+  .row:has(> .segmented) { grid-template-columns: 1fr !important; }
+  .segmented { display: flex; width: 100%; }
+  .segmented button { flex: 1; }
+}

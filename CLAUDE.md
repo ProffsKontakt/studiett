@@ -30,7 +30,8 @@ server/server.js               statisk server + /api/today /api/exams /api/degre
 server/adapters/               canvas.js timeedit.js ladok.js -> normaliserat schema
 server/core/                   rank.js exams.js degree.js (produktlogiken)
 server/data/                   mockprofiler viktor.json (KTH), julian.json (SU/DSV)
-web/                           PWA: index.html app.js styles.css sw.js manifest. Fyra vyer: Idag, Tentor, Examen, Kopplingar (inställningar)
+web/                           PWA: index.html app.js styles.css sw.js manifest. Fyra vyer: Idag, Tentor, Examen, Kopplingar (profil, kopplingar, utseende). Topprad med uppdatera/notiser/utseende/logga ut
+web/data/                      larosaten.json (handskriven, verifierade adresser), gymnasier.json (byggd av scripts/build-gymnasier.mjs från Skolverket)
 ```
 
 ## Datakällor
@@ -38,5 +39,6 @@ web/                           PWA: index.html app.js styles.css sw.js manifest.
 - **Canvas**: personlig åtkomsttoken, skapas av studenten själv. Måste anropas från servern (ingen CORS).
 - **TimeEdit**: iCal-prenumerationslänk som studenten hämtar själv. Länken är hemligheten.
 - **Ladok**: inget officiellt student-API. Största risken i projektet. Tre spår i `docs/DECISIONS.md` §3. Spår 2 är byggt: intyg som PDF läses av en modell (`server/adapters/ladok.js`, `docs/DECISIONS.md` §9). Modellen skriver av, all status räknas deterministiskt.
+- Studenten väljer nivå och lärosäte under Kopplingar (`docs/DECISIONS.md` §12); det styr förifyllda adresser och direktlänkar. Lägg till eller rätta lärosäten i `web/data/larosaten.json`, aldrig i `app.js`.
 - Riktiga kopplingar görs i vyn Kopplingar och bor i studentens webbläsare (`docs/DECISIONS.md` §11), eller i `.env` enligt `.env.example` vid lokal körning. Saknas båda körs servern på mockdata.
 - Innan en ny adapter byggs: läs `docs/SOURCES.md` för åtkomsttyp och vad systemet kan mata. Gymnasiesystem är avtalsspår, inte studentspår.

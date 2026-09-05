@@ -50,7 +50,11 @@ const cache = new Map(); // key -> { at, bundle }
 export async function loadBundle(student = process.env.STUDENT ?? "viktor", env = process.env, overlay = null) {
   const connections = overlay?.connections ?? null;
   const sources = liveConfig(env, connections);
-  const bundle = sources.length === 0 ? await loadMock(student) : await loadLive(student, env, sources, connections);
+  let bundle = sources.length === 0 ? await loadMock(student) : await loadLive(student, env, sources, connections);
+  const profile = connections?.profile;
+  if (profile && typeof profile === "object") {
+    bundle = { ...bundle, student: { ...bundle.student, name: String(profile.name || bundle.student.name || ""), institution: String(profile.institution || bundle.student.institution || "") } };
+  }
   return overlay?.ladok ? applyOverlay(bundle, overlay.ladok) : bundle;
 }
 
