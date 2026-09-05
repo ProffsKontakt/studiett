@@ -361,6 +361,7 @@ function searchInstitutions(list, q, limit = 12) {
 }
 
 const SYSTEM_NAME = { canvas: "Canvas", moodle: "Moodle", blackboard: "Blackboard", itslearning: "Itslearning", lisam: "Lisam", timeedit: "TimeEdit", kronox: "KronoX", other: "ett eget system" };
+let icalProvider = null; // vald kalendertjänst medan formuläret är öppet
 
 function renderProfile() {
   const p = profileGet();
@@ -401,6 +402,7 @@ function wireProfile() {
     const p = profileGet();
     if (p.level === b.dataset.level) return;
     profileSet({ level: b.dataset.level, institution: null });
+    icalProvider = null; openConnection = null;
     lastLoadedAt = 0;
     renderConnections();
   }));
@@ -469,7 +471,7 @@ function connectionDefs() {
   const defs = [
     { id: "canvas", name: "Canvas", what: "Kurser, inlämningar och kalender",
       link: canvas ? { url: `${canvas}/profile/settings`, label: "Skapa token i Canvas" } : null,
-      note: inst && !canvas && inst.lms && inst.lms !== "canvas" ? `${inst.name} använder ${SYSTEM_NAME[inst.lms] ?? inst.lms}, inte Canvas. Koppla kalendern under ${inst.lmsUrl ? SYSTEM_NAME[inst.lms] : "Annan kalender"} ovan.` : "",
+      note: inst && !canvas && inst.lms && inst.lms !== "canvas" ? `${inst.name} använder ${SYSTEM_NAME[inst.lms] ?? inst.lms}, inte Canvas. Koppla kalendern under Annan kalender.` : "",
       fields: [
         canvas
           ? { key: "baseUrl", label: "Adress", type: "static", value: canvas, hint: `${inst.name} kör Canvas här. Byt lärosäte under Profil om det är fel.` }
@@ -493,26 +495,39 @@ function connectionDefs() {
   return first ? [defs.find(d => d.id === first), ...defs.filter(d => d.id !== first)] : defs;
 }
 
-// Kalenderkopplingen tar lärosätets egen lärplattforms namn när den är känd (Moodle, Itslearning,
-// Blackboard) och länkar rakt till sidan där iCal-länken hämtas. Formatet är alltid iCal; adaptern är densamma.
-const CALENDAR_SYSTEMS = {
-  moodle:      { path: "/calendar/export.php", label: "Öppna kalenderexporten i Moodle", hint: "Exportera kalender → Alla händelser → Hämta kalender-URL. Klistra in den här." },
-  itslearning: { path: "", label: "Öppna Itslearning", hint: "Kalender → … → Prenumerera på iCal-flöde. Klistra in länken här." },
-  blackboard:  { path: "", label: "Öppna Blackboard", hint: "Kalender → Inställningar → Dela kalender (ICS). Klistra in länken här." },
-  lisam:       { path: "", label: "Öppna Lisam", hint: "Lisam har ingen egen kalenderlänk. Använd schemat från TimeEdit ovan, eller en Outlook-kalender publicerad som ICS." },
-};
+// Kalenderkopplingen: en tjänst i taget. Studenten väljer var kalendern bor och får en länk rakt
+// till sidan där iCal-adressen hämtas, plus hur man gör där. Formatet är alltid iCal; adaptern är densamma.
+const CALENDAR_PROVIDERS = [
+  { id: "google", name: "Google Kalender", url: "https://calendar.google.com/calendar/u/0/r/settings", label: "Öppna inställningarna i Google Kalender", hint: "Välj kalendern i vänsterspalten → Integrera kalender → Hemlig adress i iCal-format. Klistra in den här." },
+  { id: "outlook", name: "Outlook / Microsoft 365", url: "https://outlook.office.com/calendar/options/calendar/SharedCalendars", label: "Öppna delning i Outlook", hint: "Publicera en kalender → välj kalendern och Kan visa all information → Publicera → kopiera ICS-länken. Lärosätets Outlook kan ha publicering avstängd." },
+  { id: "icloud", name: "Apple iCloud", url: "https://www.icloud.com/calendar/", label: "Öppna iCloud Kalender", hint: "Dela kalendern → Offentlig kalender → kopiera länken. Bara iCloud-kalendrar går att dela, inte 'På min iPhone'." },
+  { id: "moodle", name: "Moodle", path: "/calendar/export.php", label: "Öppna kalenderexporten i Moodle", hint: "Exportera kalender → Alla händelser → Hämta kalender-URL. Klistra in den här." },
+  { id: "itslearning", name: "Itslearning", path: "", label: "Öppna Itslearning", hint: "Kalender → … → Prenumerera på iCal-flöde. Klistra in länken här." },
+  { id: "blackboard", name: "Blackboard", path: "", label: "Öppna Blackboard", hint: "Kalender → Inställningar → Dela kalender (ICS). Klistra in länken här." },
+  { id: "schoolsoft", name: "SchoolSoft", url: null, label: null, hint: "Elev-appen eller webben: Kalender → Prenumerera → kopiera länken. Klistra in den här.", level: "gymnasium" },
+  { id: "vklass", name: "Vklass", url: null, label: null, hint: "Schema → Prenumerera (ics) → kopiera länken. Fem dagar bakåt, 31 framåt.", level: "gymnasium" },
+  { id: "other", name: "Annan iCal-länk", url: null, label: null, hint: "Alla kalendrar som kan exportera iCal fungerar. Länken ska sluta på .ics eller ge en kalender." },
+];
+const PROVIDER_NAME = Object.fromEntries(CALENDAR_PROVIDERS.map(p => [p.id, p.name]));
+
+function calendarProviders(inst, level) {
+  const own = inst?.lms && inst.lmsUrl && CALENDAR_PROVIDERS.some(p => p.id === inst.lms) ? inst.lms : null;
+  const list = CALENDAR_PROVIDERS
+    .filter(p => !p.level || p.level === level)
+    .map(p => p.id === own ? { ...p, url: inst.lmsUrl + p.path, name: `${p.name} (${inst.name})`, own: true } : p.path !== undefined && !p.url ? { ...p, url: null, label: null } : p);
+  // Lärosätets eget system först, sedan de stora, sist "annan".
+  return list.sort((a, b) => (b.own ? 1 : 0) - (a.own ? 1 : 0));
+}
+
 function calendarDef(inst, level) {
-  const sys = inst?.lms && CALENDAR_SYSTEMS[inst.lms] && inst.lmsUrl ? inst.lms : null;
-  const c = sys ? CALENDAR_SYSTEMS[sys] : null;
+  const providers = calendarProviders(inst, level);
+  const own = providers.find(p => p.own);
   return {
     id: "ical",
-    name: sys ? SYSTEM_NAME[sys] : "Annan kalender",
-    what: sys ? `${inst.name}s lärplattform · kalender som iCal` : level === "gymnasium" ? "Schema från SchoolSoft, Vklass, Itslearning eller Google" : "Schema från Moodle, Itslearning, Outlook eller Google",
-    link: c ? { url: inst.lmsUrl + c.path, label: c.label } : null,
-    fields: [
-      { key: "icalUrl", label: "iCal-länk", type: "url", placeholder: "https://…/calendar.ics", autocomplete: "url",
-        hint: c ? c.hint : level === "gymnasium" ? "SchoolSoft: Kalender → Prenumerera. Vklass: Schema → Prenumerera (ics). Länken ska sluta på .ics eller ge en kalender." : "Alla kalendrar som kan exportera iCal fungerar. Länken ska sluta på .ics eller ge en kalender." },
-    ],
+    name: "Annan kalender",
+    what: own ? `${own.name.replace(/ \(.*\)$/, "")}, Google, Outlook eller iCloud` : level === "gymnasium" ? "SchoolSoft, Vklass, Google eller Outlook" : "Google, Outlook, iCloud, Moodle eller Itslearning",
+    providers,
+    fields: [{ key: "icalUrl", label: "iCal-länk", type: "url", placeholder: "https://…/calendar.ics", autocomplete: "url", hint: "" }],
   };
 }
 const UNAVAILABLE = [
@@ -530,11 +545,13 @@ function connStatusText(conn) {
     const token = age == null ? "" : age >= TOKEN_DAYS ? " · tokenen har troligen gått ut, skapa en ny" : age >= TOKEN_DAYS - 5 ? ` · tokenen går ut om ${TOKEN_DAYS - age} dagar` : "";
     return `Kopplad · ${conn.name}${conn.courses != null ? ` · ${conn.courses} kurser` : ""}${conn.invited ? ` · ${conn.invited} inbjudan${conn.invited === 1 ? "" : "ar"} väntar` : ""}${token}`;
   }
-  if (conn.upcoming != null) return `Kopplad · ${conn.upcoming} kommande händelser`;
+  if (conn.upcoming != null) return `Kopplad · ${conn.provider && PROVIDER_NAME[conn.provider] ? PROVIDER_NAME[conn.provider] + " · " : ""}${conn.upcoming} kommande händelser`;
   return "Kopplad";
 }
 
 function renderConnectionGroup(def, conn, open, receipt) {
+  // provider: undefined = kopplingen har ingen tjänsteväljare; null = tjänst ej vald än; objekt = vald.
+  const provider = def.providers ? (def.providers.find(p => p.id === (icalProvider ?? conn?.provider)) ?? null) : undefined;
   const fields = def.fields.map(f => f.type === "static" ? `
     <div class="field">
       <span class="field-label">${esc(f.label)}</span>
@@ -561,13 +578,27 @@ function renderConnectionGroup(def, conn, open, receipt) {
       ${receipt ? `<p class="status conn-receipt" role="status">${esc(receipt)}</p>` : ""}
       <form class="conn-form" id="form-${def.id}" data-kind="${def.id}" ${open ? "" : "hidden"}>
         ${def.note ? `<p class="status">${esc(def.note)}</p>` : ""}
+        ${provider === undefined ? `
         ${def.link ? `<a class="button-text is-link" href="${esc(def.link.url)}" target="_blank" rel="noopener">${esc(def.link.label)} <span aria-hidden="true">↗</span></a>` : ""}
-        ${fields}
+        ${fields}` : !provider ? `
+        <div class="field">
+          <span class="field-label" id="provider-label">Var bor kalendern?</span>
+          <div class="provider-grid" role="group" aria-labelledby="provider-label">
+            ${def.providers.map(p => `<button class="provider" type="button" data-provider="${p.id}">${esc(p.name)}</button>`).join("")}
+          </div>
+        </div>` : `
+        <div class="field">
+          <span class="field-label">Tjänst</span>
+          <div class="provider-chosen"><span class="field-static">${esc(provider.name)}</span><button class="button-text" type="button" data-provider="">Byt</button></div>
+        </div>
+        ${provider.url ? `<a class="button-text is-link" href="${esc(provider.url)}" target="_blank" rel="noopener">${esc(provider.label)} <span aria-hidden="true">↗</span></a>` : ""}
+        ${fields.replace('<span class="field-hint"></span>', `<span class="field-hint">${esc(provider.hint)}</span>`)}`}
+        ${provider === null ? "" : `
         <p class="status" role="status" data-status></p>
         <div class="actions">
           <button class="action" type="submit">Testa och spara</button>
           ${conn ? `<button class="button-text" type="button" data-remove="${def.id}">Koppla bort</button>` : ""}
-        </div>
+        </div>`}
       </form>
     </div>`;
 }
@@ -598,8 +629,15 @@ function wireConnections() {
   view.querySelectorAll("[data-toggle]").forEach(btn => btn.addEventListener("click", () => {
     const id = btn.dataset.toggle;
     openConnection = openConnection === id ? null : id;
+    icalProvider = null;
     renderConnections();
     if (openConnection) view.querySelector(`#form-${id} input`)?.focus();
+  }));
+  view.querySelectorAll("[data-provider]").forEach(btn => btn.addEventListener("click", () => {
+    icalProvider = btn.dataset.provider || null;
+    if (!icalProvider) { const c = connGet(); if (c.ical) { delete c.ical.provider; connSet(c); } }
+    renderConnections();
+    view.querySelector(icalProvider ? '#form-ical input[name="icalUrl"]' : "#form-ical .provider")?.focus();
   }));
   view.querySelectorAll("[data-remove]").forEach(btn => btn.addEventListener("click", () => {
     const c = connGet(); delete c[btn.dataset.remove]; connSet(c); openConnection = null; receipts[btn.dataset.remove] = "Bortkopplad."; renderConnections();
@@ -622,7 +660,7 @@ function wireConnections() {
       const c = connGet();
       c[kind] = kind === "canvas"
         ? { baseUrl: body.baseUrl, token: data.token, name: body.name, courses: body.courses, invited: body.invited ?? 0, institution: institutionFor(body.baseUrl), at: Date.now() }
-        : { icalUrl: data.icalUrl.trim(), upcoming: body.upcoming, events: body.events, at: Date.now() };
+        : { icalUrl: data.icalUrl.trim(), upcoming: body.upcoming, events: body.events, at: Date.now(), ...(kind === "ical" && icalProvider ? { provider: icalProvider } : {}) };
       connSet(c);
       if (kind === "canvas" && !profileGet().institution) adoptInstitutionFromCanvas(body.baseUrl);
       openConnection = null;
