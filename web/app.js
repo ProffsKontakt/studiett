@@ -497,9 +497,14 @@ const UNAVAILABLE = [
   { name: "Skola24, Unikum, InfoMentor", why: "Kräver avtal med skolans huvudman." },
 ];
 
+const TOKEN_DAYS = 30; // Canvas: studenttokens gäller högst 30 dagar (docs/API.md)
 function connStatusText(conn) {
   if (!conn) return "Inte kopplad";
-  if (conn.name) return `Kopplad · ${conn.name}${conn.courses != null ? ` · ${conn.courses} kurser` : ""}`;
+  if (conn.name) {
+    const age = conn.at ? Math.floor((Date.now() - conn.at) / 864e5) : null;
+    const token = age == null ? "" : age >= TOKEN_DAYS ? " · tokenen har troligen gått ut, skapa en ny" : age >= TOKEN_DAYS - 5 ? ` · tokenen går ut om ${TOKEN_DAYS - age} dagar` : "";
+    return `Kopplad · ${conn.name}${conn.courses != null ? ` · ${conn.courses} kurser` : ""}${conn.invited ? ` · ${conn.invited} inbjudan${conn.invited === 1 ? "" : "ar"} väntar` : ""}${token}`;
+  }
   if (conn.upcoming != null) return `Kopplad · ${conn.upcoming} kommande händelser`;
   return "Kopplad";
 }
@@ -585,13 +590,13 @@ function wireConnections() {
       if (!res.ok) throw new Error(body.error || `Servern svarade ${res.status}.`);
       const c = connGet();
       c[kind] = kind === "canvas"
-        ? { baseUrl: body.baseUrl, token: data.token, name: body.name, courses: body.courses, institution: institutionFor(body.baseUrl), at: Date.now() }
+        ? { baseUrl: body.baseUrl, token: data.token, name: body.name, courses: body.courses, invited: body.invited ?? 0, institution: institutionFor(body.baseUrl), at: Date.now() }
         : { icalUrl: data.icalUrl.trim(), upcoming: body.upcoming, events: body.events, at: Date.now() };
       connSet(c);
       if (kind === "canvas" && !profileGet().institution) adoptInstitutionFromCanvas(body.baseUrl);
       openConnection = null;
       lastLoadedAt = 0;
-      receipts[kind] = kind === "canvas" ? `Kopplad som ${body.name} med ${body.courses} aktiva kurser.` : `${body.upcoming} kommande händelser${body.next ? ", nästa " + fmtDay(body.next).replace(/\.$/, "") : ""}.`;
+      receipts[kind] = kind === "canvas" ? canvasReceipt(body) : `${body.upcoming} kommande händelser${body.next ? ", nästa " + fmtDay(body.next).replace(/\.$/, "") : ""}.`;
       renderConnections();
     } catch (err) {
       status.className = "status is-danger";
@@ -601,6 +606,15 @@ function wireConnections() {
       status.removeAttribute("aria-busy");
     }
   }));
+}
+
+// Kvittot förklarar noll kurser: Canvas visar studenten bara publicerade kurser och accepterade inbjudningar.
+function canvasReceipt(body) {
+  const parts = [`Kopplad som ${body.name} med ${body.courses} aktiva kurser.`];
+  if (body.invited) parts.push(`${body.invited} inbjudan${body.invited === 1 ? "" : "ar"} väntar i Canvas; acceptera där så syns kursen här.`);
+  else if (!body.courses) parts.push("Inga kurser är publicerade för dig än. De dyker upp när läraren publicerar kursrummet.");
+  parts.push("Canvas låter studenttokens gälla högst 30 dagar; skapa en ny här när Idag slutar visa Canvas-data.");
+  return parts.join(" ");
 }
 
 async function adoptInstitutionFromCanvas(baseUrl) {

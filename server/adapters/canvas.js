@@ -1,6 +1,6 @@
 // Canvas LMS adapter. Kräver personlig access token (Konto → Inställningar → Ny åtkomsttoken).
 // Körs på servern: Canvas svarar inte med CORS-headers för tokenanrop från webbläsare.
-// Docs: https://canvas.instructure.com/doc/api/
+// Docs: https://canvas.instructure.com/doc/api/ och docs/API.md. Studenttokens lever högst 30 dagar.
 //
 // KTH: https://canvas.kth.se   SU (från HT26): https://canvas.su.se
 import { publicHttpsUrl, fetchJson, NetError } from "../net.js";
@@ -19,7 +19,7 @@ async function get(baseUrl, token, path) {
 
 export async function fetchAll({ baseUrl, token }) {
   const origin = base(baseUrl);
-  const courses = await get(origin, token, "/courses?enrollment_state=active&per_page=50");
+  const courses = await get(origin, token, "/courses?enrollment_state=active&per_page=100");
   const assignments = [];
   const events = [];
 
@@ -70,11 +70,16 @@ export async function fetchAll({ baseUrl, token }) {
   };
 }
 
-// Kvitto vid koppling: studentens namn och antal aktiva kurser. Tokenen returneras aldrig.
+// Kvitto vid koppling: studentens namn, antal aktiva kurser och antal väntande inbjudningar.
+// Studenten ser bara publicerade kurser (state=available) och accepterade inbjudningar; en tom lista
+// i terminsstarten är alltså ett riktigt svar, inte ett fel (docs/API.md). Tokenen returneras aldrig.
 export async function verify({ baseUrl, token }) {
   if (!token || String(token).length < 20) throw new NetError(400, "Klistra in hela tokenen från Canvas.");
   const origin = base(baseUrl);
   const me = await get(origin, token, "/users/self");
-  const courses = await get(origin, token, "/courses?enrollment_state=active&per_page=50");
-  return { ok: true, name: me.name ?? me.short_name ?? "", courses: courses.length, baseUrl: origin };
+  const [courses, invited] = await Promise.all([
+    get(origin, token, "/courses?enrollment_state=active&per_page=100"),
+    get(origin, token, "/courses?enrollment_state=invited_or_pending&per_page=100").catch(() => []),
+  ]);
+  return { ok: true, name: me.name ?? me.short_name ?? "", courses: courses.length, invited: invited.length, baseUrl: origin };
 }
