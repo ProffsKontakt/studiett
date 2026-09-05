@@ -319,3 +319,4 @@ button.row { font: inherit; color: inherit; }
   .segmented { display: flex; width: 100%; }
   .segmented button { flex: 1; }
 }
+.field-static { min-height: 44px; display: flex; align-items: center; padding: 0 14px; border-radius: 12px; background: var(--surface-2); color: var(--label); font-variant-numeric: tabular-nums; }

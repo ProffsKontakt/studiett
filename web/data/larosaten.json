@@ -1,5 +1,5 @@
 {
- "note": "Svenska universitet och högskolor (UKÄ:s lista). canvas = verifierad Canvas-adress (svarar 401 unauthenticated på /api/v1/users/self), annars null. schedule.url = schemavisarens ingång; TimeEdit-ingångar och KronoX-värdar verifierade 2026-09-05 (kronox.se/app/larosaten.php). null = ej känd, studenten får söka själv. Uppdatera här, inte i app.js.",
+ "note": "Svenska universitet och högskolor (UKÄ:s lista). canvas = verifierad Canvas-adress (svarar 401 unauthenticated på /api/v1/users/self), annars null. schedule.url = schemavisarens ingång; TimeEdit-ingångar och KronoX-värdar verifierade 2026-09-05 (kronox.se/app/larosaten.php). null = ej känd, studenten får söka själv. Uppdatera här, inte i app.js. lms/lmsUrl = lärplattform och verifierad adress (moodle.lnu.se, hh.blackboard.com, mchs.itslearning.com, lisam.liu.se).",
  "institutions": [
   {
    "id": "kth",
@@ -10,7 +10,8 @@
    "schedule": {
     "system": "timeedit",
     "url": "https://cloud.timeedit.net/kth/web/public01/"
-   }
+   },
+   "lmsUrl": "https://canvas.kth.se"
   },
   {
    "id": "su",
@@ -21,7 +22,8 @@
    "schedule": {
     "system": "timeedit",
     "url": "https://cloud.timeedit.net/su/web/stud1/"
-   }
+   },
+   "lmsUrl": "https://canvas.su.se"
   },
   {
    "id": "uu",
@@ -32,7 +34,8 @@
    "schedule": {
     "system": "timeedit",
     "url": "https://cloud.timeedit.net/uu/web/wr_student/"
-   }
+   },
+   "lmsUrl": "https://uppsala.instructure.com"
   },
   {
    "id": "lu",
@@ -43,7 +46,8 @@
    "schedule": {
     "system": "timeedit",
     "url": "https://cloud.timeedit.net/lu/web/"
-   }
+   },
+   "lmsUrl": "https://canvas.education.lu.se"
   },
   {
    "id": "gu",
@@ -54,7 +58,8 @@
    "schedule": {
     "system": "timeedit",
     "url": "https://cloud.timeedit.net/gu/web/schema/"
-   }
+   },
+   "lmsUrl": "https://canvas.gu.se"
   },
   {
    "id": "umu",
@@ -65,7 +70,8 @@
    "schedule": {
     "system": "timeedit",
     "url": "https://cloud.timeedit.net/umu/web/public1/"
-   }
+   },
+   "lmsUrl": "https://umu.instructure.com"
   },
   {
    "id": "liu",
@@ -76,7 +82,8 @@
    "schedule": {
     "system": "timeedit",
     "url": "https://cloud.timeedit.net/liu/web/schema/"
-   }
+   },
+   "lmsUrl": "https://lisam.liu.se"
   },
   {
    "id": "chalmers",
@@ -87,7 +94,8 @@
    "schedule": {
     "system": "timeedit",
     "url": "https://cloud.timeedit.net/chalmers/web/public/"
-   }
+   },
+   "lmsUrl": "https://chalmers.instructure.com"
   },
   {
    "id": "ki",
@@ -98,7 +106,8 @@
    "schedule": {
     "system": "timeedit",
     "url": "https://cloud.timeedit.net/ki/web/"
-   }
+   },
+   "lmsUrl": "https://canvas.ki.se"
   },
   {
    "id": "slu",
@@ -109,7 +118,8 @@
    "schedule": {
     "system": "timeedit",
     "url": "https://cloud.timeedit.net/slu/web/stud1/"
-   }
+   },
+   "lmsUrl": "https://slu-se.instructure.com"
   },
   {
    "id": "ltu",
@@ -120,7 +130,8 @@
    "schedule": {
     "system": "kronox",
     "url": "https://tenta.ltu.se/avanceratschema.jsp"
-   }
+   },
+   "lmsUrl": "https://ltu.instructure.com"
   },
   {
    "id": "kau",
@@ -131,7 +142,8 @@
    "schedule": {
     "system": "timeedit",
     "url": "https://cloud.timeedit.net/kau/web/schema_kau/"
-   }
+   },
+   "lmsUrl": "https://kau.instructure.com"
   },
   {
    "id": "lnu",
@@ -142,7 +154,8 @@
    "schedule": {
     "system": "timeedit",
     "url": "https://cloud.timeedit.net/lnu/web/schema1/"
-   }
+   },
+   "lmsUrl": "https://moodle.lnu.se"
   },
   {
    "id": "oru",
@@ -153,7 +166,8 @@
    "schedule": {
     "system": "kronox",
     "url": "https://schema.oru.se/avanceratschema.jsp"
-   }
+   },
+   "lmsUrl": null
   },
   {
    "id": "miun",
@@ -164,7 +178,8 @@
    "schedule": {
     "system": "timeedit",
     "url": "https://cloud.timeedit.net/miun/web/"
-   }
+   },
+   "lmsUrl": "https://miun.instructure.com"
   },
   {
    "id": "mau",
@@ -175,18 +190,20 @@
    "schedule": {
     "system": "kronox",
     "url": "https://schema.mau.se/avanceratschema.jsp"
-   }
+   },
+   "lmsUrl": "https://mau.instructure.com"
   },
   {
    "id": "mdu",
    "name": "Mälardalens universitet",
    "city": "Västerås och Eskilstuna",
-   "canvas": null,
+   "canvas": "https://canvas.mdu.se",
    "lms": "canvas",
    "schedule": {
     "system": "kronox",
     "url": "https://webbschema.mdu.se/avanceratschema.jsp"
-   }
+   },
+   "lmsUrl": "https://canvas.mdu.se"
   },
   {
    "id": "hb",
@@ -197,7 +214,8 @@
    "schedule": {
     "system": "kronox",
     "url": "https://schema.hb.se/avanceratschema.jsp"
-   }
+   },
+   "lmsUrl": "https://hb.instructure.com"
   },
   {
    "id": "hig",
@@ -208,7 +226,8 @@
    "schedule": {
     "system": "kronox",
     "url": "https://schema.hig.se/avanceratschema.jsp"
-   }
+   },
+   "lmsUrl": "https://hig.instructure.com"
   },
   {
    "id": "hkr",
@@ -219,7 +238,8 @@
    "schedule": {
     "system": "kronox",
     "url": "https://schema.hkr.se/avanceratschema.jsp"
-   }
+   },
+   "lmsUrl": "https://hkr.instructure.com"
   },
   {
    "id": "hv",
@@ -230,7 +250,8 @@
    "schedule": {
     "system": "kronox",
     "url": "https://schema.hv.se/avanceratschema.jsp"
-   }
+   },
+   "lmsUrl": "https://hv.instructure.com"
   },
   {
    "id": "sh",
@@ -241,7 +262,8 @@
    "schedule": {
     "system": "kronox",
     "url": "https://kronox.sh.se/avanceratschema.jsp"
-   }
+   },
+   "lmsUrl": null
   },
   {
    "id": "konstfack",
@@ -252,7 +274,8 @@
    "schedule": {
     "system": "kronox",
     "url": "https://kronox.konstfack.se/avanceratschema.jsp"
-   }
+   },
+   "lmsUrl": "https://konstfack.instructure.com"
   },
   {
    "id": "hh",
@@ -263,7 +286,8 @@
    "schedule": {
     "system": "timeedit",
     "url": "https://cloud.timeedit.net/hh/web/"
-   }
+   },
+   "lmsUrl": "https://hh.blackboard.com"
   },
   {
    "id": "hj",
@@ -274,7 +298,8 @@
    "schedule": {
     "system": "timeedit",
     "url": "https://cloud.timeedit.net/ju/web/"
-   }
+   },
+   "lmsUrl": "https://ju.instructure.com"
   },
   {
    "id": "his",
@@ -285,7 +310,8 @@
    "schedule": {
     "system": "timeedit",
     "url": "https://cloud.timeedit.net/his/web/"
-   }
+   },
+   "lmsUrl": "https://his.instructure.com"
   },
   {
    "id": "du",
@@ -296,7 +322,8 @@
    "schedule": {
     "system": "timeedit",
     "url": null
-   }
+   },
+   "lmsUrl": "https://du.instructure.com"
   },
   {
    "id": "bth",
@@ -307,7 +334,8 @@
    "schedule": {
     "system": "timeedit",
     "url": "https://cloud.timeedit.net/bth/web/"
-   }
+   },
+   "lmsUrl": "https://bth.instructure.com"
   },
   {
    "id": "fhs",
@@ -318,7 +346,8 @@
    "schedule": {
     "system": "timeedit",
     "url": null
-   }
+   },
+   "lmsUrl": "https://fhs.instructure.com"
   },
   {
    "id": "gih",
@@ -329,7 +358,8 @@
    "schedule": {
     "system": "timeedit",
     "url": "https://cloud.timeedit.net/gih/web/"
-   }
+   },
+   "lmsUrl": "https://gih.instructure.com"
   },
   {
    "id": "hhs",
@@ -340,7 +370,8 @@
    "schedule": {
     "system": "other",
     "url": null
-   }
+   },
+   "lmsUrl": null
   },
   {
    "id": "kmh",
@@ -351,7 +382,8 @@
    "schedule": {
     "system": "timeedit",
     "url": "https://cloud.timeedit.net/kmh/web/"
-   }
+   },
+   "lmsUrl": "https://kmh.instructure.com"
   },
   {
    "id": "kkh",
@@ -362,7 +394,8 @@
    "schedule": {
     "system": "other",
     "url": null
-   }
+   },
+   "lmsUrl": null
   },
   {
    "id": "uniarts",
@@ -373,7 +406,8 @@
    "schedule": {
     "system": "timeedit",
     "url": null
-   }
+   },
+   "lmsUrl": "https://uniarts.instructure.com"
   },
   {
    "id": "mchs",
@@ -384,7 +418,8 @@
    "schedule": {
     "system": "timeedit",
     "url": null
-   }
+   },
+   "lmsUrl": "https://mchs.itslearning.com"
   },
   {
    "id": "shh",
@@ -395,7 +430,8 @@
    "schedule": {
     "system": "timeedit",
     "url": "https://cloud.timeedit.net/shh/web/"
-   }
+   },
+   "lmsUrl": "https://shh.instructure.com"
   },
   {
    "id": "rkh",
@@ -406,7 +442,8 @@
    "schedule": {
     "system": "timeedit",
     "url": null
-   }
+   },
+   "lmsUrl": "https://rkh.instructure.com"
   },
   {
    "id": "ehs",
@@ -417,7 +454,8 @@
    "schedule": {
     "system": "other",
     "url": null
-   }
+   },
+   "lmsUrl": null
   },
   {
    "id": "bhs",
@@ -428,7 +466,8 @@
    "schedule": {
     "system": "other",
     "url": null
-   }
+   },
+   "lmsUrl": null
   },
   {
    "id": "newman",
@@ -439,7 +478,8 @@
    "schedule": {
     "system": "other",
     "url": null
-   }
+   },
+   "lmsUrl": null
   },
   {
    "id": "jhs",
@@ -450,7 +490,8 @@
    "schedule": {
     "system": "other",
     "url": null
-   }
+   },
+   "lmsUrl": null
   },
   {
    "id": "sfh",
@@ -461,7 +502,8 @@
    "schedule": {
     "system": "other",
     "url": null
-   }
+   },
+   "lmsUrl": null
   },
   {
    "id": "hgo",
@@ -472,7 +514,8 @@
    "schedule": {
     "system": "timeedit",
     "url": "https://cloud.timeedit.net/uu/web/wr_student/"
-   }
+   },
+   "lmsUrl": "https://uppsala.instructure.com"
   }
  ]
 }
