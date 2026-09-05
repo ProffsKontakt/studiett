@@ -1,0 +1,478 @@
+{
+ "note": "Svenska universitet och högskolor (UKÄ:s lista). canvas = verifierad Canvas-adress (svarar 401 unauthenticated på /api/v1/users/self), annars null. schedule.url = schemavisarens ingång; TimeEdit-ingångar och KronoX-värdar verifierade 2026-09-05 (kronox.se/app/larosaten.php). null = ej känd, studenten får söka själv. Uppdatera här, inte i app.js.",
+ "institutions": [
+  {
+   "id": "kth",
+   "name": "KTH, Kungliga Tekniska högskolan",
+   "city": "Stockholm",
+   "canvas": "https://canvas.kth.se",
+   "lms": "canvas",
+   "schedule": {
+    "system": "timeedit",
+    "url": "https://cloud.timeedit.net/kth/web/public01/"
+   }
+  },
+  {
+   "id": "su",
+   "name": "Stockholms universitet",
+   "city": "Stockholm",
+   "canvas": "https://canvas.su.se",
+   "lms": "canvas",
+   "schedule": {
+    "system": "timeedit",
+    "url": "https://cloud.timeedit.net/su/web/stud1/"
+   }
+  },
+  {
+   "id": "uu",
+   "name": "Uppsala universitet",
+   "city": "Uppsala",
+   "canvas": "https://uppsala.instructure.com",
+   "lms": "canvas",
+   "schedule": {
+    "system": "timeedit",
+    "url": "https://cloud.timeedit.net/uu/web/wr_student/"
+   }
+  },
+  {
+   "id": "lu",
+   "name": "Lunds universitet",
+   "city": "Lund",
+   "canvas": "https://canvas.education.lu.se",
+   "lms": "canvas",
+   "schedule": {
+    "system": "timeedit",
+    "url": "https://cloud.timeedit.net/lu/web/"
+   }
+  },
+  {
+   "id": "gu",
+   "name": "Göteborgs universitet",
+   "city": "Göteborg",
+   "canvas": "https://canvas.gu.se",
+   "lms": "canvas",
+   "schedule": {
+    "system": "timeedit",
+    "url": "https://cloud.timeedit.net/gu/web/schema/"
+   }
+  },
+  {
+   "id": "umu",
+   "name": "Umeå universitet",
+   "city": "Umeå",
+   "canvas": "https://umu.instructure.com",
+   "lms": "canvas",
+   "schedule": {
+    "system": "timeedit",
+    "url": "https://cloud.timeedit.net/umu/web/public1/"
+   }
+  },
+  {
+   "id": "liu",
+   "name": "Linköpings universitet",
+   "city": "Linköping",
+   "canvas": null,
+   "lms": "lisam",
+   "schedule": {
+    "system": "timeedit",
+    "url": "https://cloud.timeedit.net/liu/web/schema/"
+   }
+  },
+  {
+   "id": "chalmers",
+   "name": "Chalmers tekniska högskola",
+   "city": "Göteborg",
+   "canvas": "https://chalmers.instructure.com",
+   "lms": "canvas",
+   "schedule": {
+    "system": "timeedit",
+    "url": "https://cloud.timeedit.net/chalmers/web/public/"
+   }
+  },
+  {
+   "id": "ki",
+   "name": "Karolinska Institutet",
+   "city": "Stockholm",
+   "canvas": "https://canvas.ki.se",
+   "lms": "canvas",
+   "schedule": {
+    "system": "timeedit",
+    "url": "https://cloud.timeedit.net/ki/web/"
+   }
+  },
+  {
+   "id": "slu",
+   "name": "SLU, Sveriges lantbruksuniversitet",
+   "city": "Uppsala",
+   "canvas": "https://slu-se.instructure.com",
+   "lms": "canvas",
+   "schedule": {
+    "system": "timeedit",
+    "url": "https://cloud.timeedit.net/slu/web/stud1/"
+   }
+  },
+  {
+   "id": "ltu",
+   "name": "Luleå tekniska universitet",
+   "city": "Luleå",
+   "canvas": "https://ltu.instructure.com",
+   "lms": "canvas",
+   "schedule": {
+    "system": "kronox",
+    "url": "https://tenta.ltu.se/avanceratschema.jsp"
+   }
+  },
+  {
+   "id": "kau",
+   "name": "Karlstads universitet",
+   "city": "Karlstad",
+   "canvas": "https://kau.instructure.com",
+   "lms": "canvas",
+   "schedule": {
+    "system": "timeedit",
+    "url": "https://cloud.timeedit.net/kau/web/schema_kau/"
+   }
+  },
+  {
+   "id": "lnu",
+   "name": "Linnéuniversitetet",
+   "city": "Växjö och Kalmar",
+   "canvas": null,
+   "lms": "moodle",
+   "schedule": {
+    "system": "timeedit",
+    "url": "https://cloud.timeedit.net/lnu/web/schema1/"
+   }
+  },
+  {
+   "id": "oru",
+   "name": "Örebro universitet",
+   "city": "Örebro",
+   "canvas": null,
+   "lms": "blackboard",
+   "schedule": {
+    "system": "kronox",
+    "url": "https://schema.oru.se/avanceratschema.jsp"
+   }
+  },
+  {
+   "id": "miun",
+   "name": "Mittuniversitetet",
+   "city": "Sundsvall och Östersund",
+   "canvas": "https://miun.instructure.com",
+   "lms": "canvas",
+   "schedule": {
+    "system": "timeedit",
+    "url": "https://cloud.timeedit.net/miun/web/"
+   }
+  },
+  {
+   "id": "mau",
+   "name": "Malmö universitet",
+   "city": "Malmö",
+   "canvas": "https://mau.instructure.com",
+   "lms": "canvas",
+   "schedule": {
+    "system": "kronox",
+    "url": "https://schema.mau.se/avanceratschema.jsp"
+   }
+  },
+  {
+   "id": "mdu",
+   "name": "Mälardalens universitet",
+   "city": "Västerås och Eskilstuna",
+   "canvas": null,
+   "lms": "canvas",
+   "schedule": {
+    "system": "kronox",
+    "url": "https://webbschema.mdu.se/avanceratschema.jsp"
+   }
+  },
+  {
+   "id": "hb",
+   "name": "Högskolan i Borås",
+   "city": "Borås",
+   "canvas": "https://hb.instructure.com",
+   "lms": "canvas",
+   "schedule": {
+    "system": "kronox",
+    "url": "https://schema.hb.se/avanceratschema.jsp"
+   }
+  },
+  {
+   "id": "hig",
+   "name": "Högskolan i Gävle",
+   "city": "Gävle",
+   "canvas": "https://hig.instructure.com",
+   "lms": "canvas",
+   "schedule": {
+    "system": "kronox",
+    "url": "https://schema.hig.se/avanceratschema.jsp"
+   }
+  },
+  {
+   "id": "hkr",
+   "name": "Högskolan Kristianstad",
+   "city": "Kristianstad",
+   "canvas": "https://hkr.instructure.com",
+   "lms": "canvas",
+   "schedule": {
+    "system": "kronox",
+    "url": "https://schema.hkr.se/avanceratschema.jsp"
+   }
+  },
+  {
+   "id": "hv",
+   "name": "Högskolan Väst",
+   "city": "Trollhättan",
+   "canvas": "https://hv.instructure.com",
+   "lms": "canvas",
+   "schedule": {
+    "system": "kronox",
+    "url": "https://schema.hv.se/avanceratschema.jsp"
+   }
+  },
+  {
+   "id": "sh",
+   "name": "Södertörns högskola",
+   "city": "Huddinge",
+   "canvas": null,
+   "lms": "canvas",
+   "schedule": {
+    "system": "kronox",
+    "url": "https://kronox.sh.se/avanceratschema.jsp"
+   }
+  },
+  {
+   "id": "konstfack",
+   "name": "Konstfack",
+   "city": "Stockholm",
+   "canvas": "https://konstfack.instructure.com",
+   "lms": "canvas",
+   "schedule": {
+    "system": "kronox",
+    "url": "https://kronox.konstfack.se/avanceratschema.jsp"
+   }
+  },
+  {
+   "id": "hh",
+   "name": "Högskolan i Halmstad",
+   "city": "Halmstad",
+   "canvas": null,
+   "lms": "blackboard",
+   "schedule": {
+    "system": "timeedit",
+    "url": "https://cloud.timeedit.net/hh/web/"
+   }
+  },
+  {
+   "id": "hj",
+   "name": "Jönköping University",
+   "city": "Jönköping",
+   "canvas": "https://ju.instructure.com",
+   "lms": "canvas",
+   "schedule": {
+    "system": "timeedit",
+    "url": "https://cloud.timeedit.net/ju/web/"
+   }
+  },
+  {
+   "id": "his",
+   "name": "Högskolan i Skövde",
+   "city": "Skövde",
+   "canvas": "https://his.instructure.com",
+   "lms": "canvas",
+   "schedule": {
+    "system": "timeedit",
+    "url": "https://cloud.timeedit.net/his/web/"
+   }
+  },
+  {
+   "id": "du",
+   "name": "Högskolan Dalarna",
+   "city": "Falun och Borlänge",
+   "canvas": "https://du.instructure.com",
+   "lms": "canvas",
+   "schedule": {
+    "system": "timeedit",
+    "url": null
+   }
+  },
+  {
+   "id": "bth",
+   "name": "Blekinge tekniska högskola",
+   "city": "Karlskrona",
+   "canvas": "https://bth.instructure.com",
+   "lms": "canvas",
+   "schedule": {
+    "system": "timeedit",
+    "url": "https://cloud.timeedit.net/bth/web/"
+   }
+  },
+  {
+   "id": "fhs",
+   "name": "Försvarshögskolan",
+   "city": "Stockholm",
+   "canvas": "https://fhs.instructure.com",
+   "lms": "canvas",
+   "schedule": {
+    "system": "timeedit",
+    "url": null
+   }
+  },
+  {
+   "id": "gih",
+   "name": "Gymnastik- och idrottshögskolan",
+   "city": "Stockholm",
+   "canvas": "https://gih.instructure.com",
+   "lms": "canvas",
+   "schedule": {
+    "system": "timeedit",
+    "url": "https://cloud.timeedit.net/gih/web/"
+   }
+  },
+  {
+   "id": "hhs",
+   "name": "Handelshögskolan i Stockholm",
+   "city": "Stockholm",
+   "canvas": null,
+   "lms": "other",
+   "schedule": {
+    "system": "other",
+    "url": null
+   }
+  },
+  {
+   "id": "kmh",
+   "name": "Kungl. Musikhögskolan",
+   "city": "Stockholm",
+   "canvas": "https://kmh.instructure.com",
+   "lms": "canvas",
+   "schedule": {
+    "system": "timeedit",
+    "url": "https://cloud.timeedit.net/kmh/web/"
+   }
+  },
+  {
+   "id": "kkh",
+   "name": "Kungl. Konsthögskolan",
+   "city": "Stockholm",
+   "canvas": null,
+   "lms": "other",
+   "schedule": {
+    "system": "other",
+    "url": null
+   }
+  },
+  {
+   "id": "uniarts",
+   "name": "Stockholms konstnärliga högskola",
+   "city": "Stockholm",
+   "canvas": "https://uniarts.instructure.com",
+   "lms": "canvas",
+   "schedule": {
+    "system": "timeedit",
+    "url": null
+   }
+  },
+  {
+   "id": "mchs",
+   "name": "Marie Cederschiöld högskola",
+   "city": "Stockholm",
+   "canvas": null,
+   "lms": "itslearning",
+   "schedule": {
+    "system": "timeedit",
+    "url": null
+   }
+  },
+  {
+   "id": "shh",
+   "name": "Sophiahemmet Högskola",
+   "city": "Stockholm",
+   "canvas": "https://shh.instructure.com",
+   "lms": "canvas",
+   "schedule": {
+    "system": "timeedit",
+    "url": "https://cloud.timeedit.net/shh/web/"
+   }
+  },
+  {
+   "id": "rkh",
+   "name": "Röda Korsets Högskola",
+   "city": "Huddinge",
+   "canvas": "https://rkh.instructure.com",
+   "lms": "canvas",
+   "schedule": {
+    "system": "timeedit",
+    "url": null
+   }
+  },
+  {
+   "id": "ehs",
+   "name": "Enskilda Högskolan Stockholm",
+   "city": "Stockholm",
+   "canvas": null,
+   "lms": "other",
+   "schedule": {
+    "system": "other",
+    "url": null
+   }
+  },
+  {
+   "id": "bhs",
+   "name": "Beckmans designhögskola",
+   "city": "Stockholm",
+   "canvas": null,
+   "lms": "other",
+   "schedule": {
+    "system": "other",
+    "url": null
+   }
+  },
+  {
+   "id": "newman",
+   "name": "Newmaninstitutet",
+   "city": "Uppsala",
+   "canvas": null,
+   "lms": "other",
+   "schedule": {
+    "system": "other",
+    "url": null
+   }
+  },
+  {
+   "id": "jhs",
+   "name": "Johannelunds teologiska högskola",
+   "city": "Uppsala",
+   "canvas": null,
+   "lms": "other",
+   "schedule": {
+    "system": "other",
+    "url": null
+   }
+  },
+  {
+   "id": "sfh",
+   "name": "Stockholms Musikpedagogiska Institut",
+   "city": "Stockholm",
+   "canvas": null,
+   "lms": "other",
+   "schedule": {
+    "system": "other",
+    "url": null
+   }
+  },
+  {
+   "id": "hgo",
+   "name": "Uppsala universitet Campus Gotland",
+   "city": "Visby",
+   "canvas": "https://uppsala.instructure.com",
+   "lms": "canvas",
+   "schedule": {
+    "system": "timeedit",
+    "url": "https://cloud.timeedit.net/uu/web/wr_student/"
+   }
+  }
+ ]
+}

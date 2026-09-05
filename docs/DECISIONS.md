@@ -64,3 +64,9 @@ Vad det inte är: säkert mot skadlig kod i sidan. En token i localStorage kan l
 Servern hämtar bara från https-adresser på publika värdar, med tio sekunders tidsgräns och två megabyte tak (`server/net.js`), eftersom studenten själv anger adresserna.
 
 Kopplingar är inte en fjärde funktion (§2). Det är inställningar, och HIG Settings säger att kontorelaterade val hör hemma i en egen yta.
+
+## 12. Profil: nivå och lärosäte väljs i appen, listorna är statiska filer (2026-09-05)
+
+Studenten väljer Nivå (Universitet eller Gymnasium) och söker fram sitt lärosäte eller sin skola under Kopplingar. Valet sparas i webbläsaren (`studiett.profile`) och skickas med som `connections.profile`; servern lagrar inget. Listorna ligger som statiska JSON-filer i `web/data/`: `larosaten.json` är handskriven efter UKÄ:s lista med verifierade Canvas-adresser (svarar 401 unauthenticated på `/api/v1/users/self`) och schemavisare (TimeEdit-ingångar, KronoX-värdar från kronox.se/app/larosaten.php); `gymnasier.json` byggs från Skolverkets öppna API (CC0, ingen nyckel) med `scripts/build-gymnasier.mjs`. Ett valt lärosäte förifyller Canvas-adressen och ger en knapp rakt in på sidan där tokenen eller schemalänken skapas. Alternativet, en databas med lärosäten, ger inget förrän det finns en databas (`docs/DATA.md`); då flyttar filerna in där.
+
+Utseende: appen har en egen ljus/mörk-växling i toppraden trots att HIG Dark Mode avråder. Beslutet är studentens uttryckliga önskan. Standard är att följa systemet, och det valet finns kvar under Kopplingar.

@@ -35,11 +35,14 @@ export function publicHttpsUrl(input, { maxLength = 2000 } = {}) {
 }
 
 // Hämtar text med tidsgräns och storlekstak. Returnerar { status, contentType, text }.
+const UA = "Mozilla/5.0 (compatible; Studiett/1.0; +https://studiett.vercel.app)";
+
 export async function fetchText(url, { headers = {}, timeoutMs = 10000, maxBytes = 2 * 1024 * 1024 } = {}) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
-    const res = await fetch(url, { headers, signal: ctrl.signal, redirect: "follow" });
+    // TimeEdit svarar 412 utan en webbläsarlik User-Agent. Sätts alltid, kan skrivas över per anrop.
+    const res = await fetch(url, { headers: { "user-agent": UA, ...headers }, signal: ctrl.signal, redirect: "follow" });
     const contentType = res.headers.get("content-type") ?? "";
     const reader = res.body?.getReader();
     const chunks = [];

@@ -57,7 +57,9 @@ Dynamic Type respekteras genom att allt sätts i `rem` och roten följer systeme
 
 Grupperade listor med 20 pt radie, 16 pt marginal, pillerformade knappar och badges. Bottenflikar: Idag, Tentor, Examen, Kopplingar. Safe areas via `env(safe-area-inset-*)`. Tryckytor minst 44 pt.
 
-Från 900 pt bredd blir bottenflikarna ett sidofält till vänster om innehållet (HIG Layout: convertible tab bar), med ordmärket ovanför. Innehållskolumnen är högst 680 pt. Samma DOM, bara CSS.
+Toppraden: ordmärke till vänster och en verktygsrad med fyra ikonknappar till höger (uppdatera, notiser med räknare, ljust/mörkt, logga ut). Ikonerna är 22 pt linjeikoner med samma linjetjocklek (1,8) som flikikonerna, knapparna 44×44 pt, etiketten är `aria-label`. Från 900 pt bredd flyttar bottenflikarna upp i toppraden mellan ordmärket och verktygen (HIG Layout: convertible tab bar); toppraden är då sticky med bakgrundsmix. Innehållskolumnen är högst 680 pt. Samma DOM, bara CSS.
+
+Notiser öppnas i en popover under klockan (`role="dialog"`, Escape och klick utanför stänger). Logga ut bekräftas i systemets `<dialog>`. Segmentkontroller (`.segmented`, radiogrupp) för Nivå och Utseende; på smal skärm får de en egen rad. Lärosäte väljs i en combobox med listbox under fältet (ARIA combobox-mönstret), träffar visas i ett kort som sticker ut under raden.
 
 ```
 ┌──────────────────────────┐
